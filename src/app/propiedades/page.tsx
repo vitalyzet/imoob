@@ -2,6 +2,8 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import PropertiesClient from './client';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Catálogo de Propiedades Exclusivas',
   description: 'Explora nuestra selección de villas, penthouses y apartamentos de lujo en España.',

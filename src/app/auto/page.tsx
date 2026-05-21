@@ -3,6 +3,8 @@ import { Suspense } from 'react';
 import AutoResultsClient from './client';
 import { Loader2 } from 'lucide-react';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'Catálogo de Coches y Vehículos',
   description: 'Explora nuestra selección de coches de lujo y vehículos en venta.',
