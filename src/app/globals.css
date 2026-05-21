@@ -1,26 +1,90 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-light: var(--primary-light);
+  --color-green-400: #1ab077;
+  --color-green-500: #139E69;
+  --color-green-600: #0f8256;
+  --color-green-700: #0b6341;
+  
+  --font-sans: var(--font-sans), system-ui, sans-serif;
+  --font-serif: var(--font-sans), system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #333333;
+    
+    --primary: #139E69;
+    --primary-hover: #0f8a5a;
+    --primary-light: #e8f4f0;
+
+    --primary-foreground: #ffffff;
+    --secondary: #EAF5EE;
+    --secondary-foreground: #139E69;
+    --muted: #f4f4f4;
+    --muted-foreground: #666666;
+    --border: #eaebec;
+  }
+
+  /* Force light mode variables onto dark mode if it accidentally triggers */
+  .dark {
+    --background: #ffffff;
+    --foreground: #333333;
+    
+    --primary: #139E69;
+    --primary-hover: #0f8a5a;
+    --primary-light: #e8f4f0;
+
+    --primary-foreground: #ffffff;
+    --secondary: #EAF5EE;
+    --secondary-foreground: #139E69;
+    --muted: #f4f4f4;
+    --muted-foreground: #666666;
+    --border: #eaebec;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+
+  body.theme-auto {
+    --primary: #0ea5e9;
+    --primary-hover: #0284c7;
+    --primary-light: #e0f2fe;
+  }
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-serif);
+    color: #000000;
+  }
+  * {
+    border-color: var(--border);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .pattern-grid {
+    background-image: radial-gradient(#e5e7eb 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
+
+/* Custom transitions */
+.transition-all-smooth {
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 500ms;
 }
