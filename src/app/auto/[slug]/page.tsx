@@ -3,16 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import AutoContactCard from '@/components/properties/AutoContactCard';
 import PropertyGallery from '@/components/properties/PropertyGallery';
+import AutoCard from '@/components/properties/AutoCard';
 import { MapPin, Calendar, Gauge, Fuel, Cog, Car, Heart, Share2, CheckCircle2, Loader2, AlertTriangle, Eye, Flag, Users } from 'lucide-react';
 
 export default function AutoDetailsPage() {
   const params = useParams();
   const slug = params?.slug as string;
   const [auto, setAuto] = useState<any>(null);
+  const [similarAutos, setSimilarAutos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
@@ -23,8 +25,49 @@ export default function AutoDetailsPage() {
       try {
         const docRef = doc(db, 'anuncios_auto', slug);
         const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          setAuto({ id: snap.id, ...snap.data() });
+          const autoData = { id: snap.id, ...snap.data() };
+          setAuto(autoData);
+          
+          // Fetch similar cars
+          try {
+            // First priority: same brand
+            let simQ = query(
+              collection(db, 'anuncios_auto'),
+              where('status', '==', 'active'),
+              where('marca', '==', autoData.marca),
+              limit(5)
+            );
+            let simSnap = await getDocs(simQ);
+            let simDocs = simSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.id !== autoData.id);
+            
+            // If we don't have enough same brand, fetch same city
+            if (simDocs.length < 4 && autoData.city) {
+              const cityQ = query(
+                collection(db, 'anuncios_auto'),
+                where('status', '==', 'active'),
+                where('city', '==', autoData.city),
+                limit(5)
+              );
+              const citySnap = await getDocs(cityQ);
+              const cityDocs = citySnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.id !== autoData.id && !simDocs.find(s => s.id === d.id));
+              simDocs = [...simDocs, ...cityDocs];
+            }
+            
+            // If still empty, fetch latest active
+            if (simDocs.length === 0) {
+              const latestQ = query(
+                collection(db, 'anuncios_auto'),
+                where('status', '==', 'active'),
+                limit(5)
+              );
+              const latestSnap = await getDocs(latestQ);
+              simDocs = latestSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.id !== autoData.id);
+            }
+            
+            setSimilarAutos(simDocs.slice(0, 4));
+          } catch (simErr) {
+            console.error('Error fetching similar autos:', simErr);
+          }
         } else {
           setError(true);
         }
@@ -87,6 +130,21 @@ export default function AutoDetailsPage() {
   const createdDate = auto.createdAt?.seconds
     ? new Date(auto.createdAt.seconds * 1000).toLocaleDateString('ro-RO', { day: 'numeric', month: 'long', year: 'numeric' })
     : '—';
+
+  // Helper for mapping Auto data to AutoCard format
+  const mapForCard = (a: any) => ({
+    id: a.id,
+    title: `${a.marca || ''} ${a.model || ''}`.trim() || 'Vehicul',
+    price: Number(a.price) || 0,
+    oldPrice: a.oldPrice ? Number(a.oldPrice) : null,
+    pretNegociabil: a.pretNegociabil || false,
+    year: a.an || '',
+    mileage: a.rulaj ? Number(a.rulaj).toLocaleString('ro-RO') : '—',
+    fuel: a.combustibil || '',
+    transmission: a.transmisie || a.cutie || '',
+    location: a.city || '',
+    image: a.images?.[0] || '',
+  });
 
   return (
     <div 
@@ -375,6 +433,33 @@ export default function AutoDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Similar Autos Section */}
+      {similarAutos.length > 0 && (
+        <div className="bg-white py-16 mt-8 border-t border-gray-100">
+          <div className="container mx-auto px-6">
+            <div className="flex items-end justify-between mb-8">
+              <div>
+                <h3 className="text-[24px] font-black text-[#0f172a] mb-2 tracking-tight">Vehicule similare în apropiere</h3>
+                <p className="text-[#64748b] font-medium">Alți utilizatori sunt interesați și de aceste anunțuri</p>
+              </div>
+              <Link href="/auto" className="hidden sm:inline-flex text-[14px] font-bold text-sky-500 hover:text-sky-600 transition-colors">
+                Vezi toate anunțurile &rarr;
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {similarAutos.map(sim => (
+                <AutoCard key={sim.id} auto={mapForCard(sim)} />
+              ))}
+            </div>
+            
+            <Link href="/auto" className="sm:hidden block text-center mt-8 text-[14px] font-bold text-sky-500 hover:text-sky-600 transition-colors">
+              Vezi toate anunțurile &rarr;
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
