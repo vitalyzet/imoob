@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -9,7 +9,7 @@ import { Search, CarFront, Calendar, Fuel, SlidersHorizontal, X, Loader2, Layout
 import Link from 'next/link';
 
 
-export default function AutoResultsPage() {
+function AutoResultsContent() {
   const searchParams = useSearchParams();
   const [allAutos, setAllAutos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -447,5 +447,13 @@ export default function AutoResultsPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function AutoResultsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center pt-28"><Loader2 className="animate-spin text-slate-400" size={48} /></div>}>
+      <AutoResultsContent />
+    </Suspense>
   );
 }
