@@ -44,6 +44,22 @@ export default function PropertyCard({ property }: { property: Property }) {
     maximumFractionDigits: 0,
   }).format(property.price);
 
+  let formattedDate = '';
+  if (property.createdAt) {
+    let dateObj;
+    if (typeof property.createdAt === 'object' && 'seconds' in property.createdAt) {
+      dateObj = new Date((property.createdAt as any).seconds * 1000);
+    } else if (typeof property.createdAt === 'number') {
+      dateObj = new Date(property.createdAt);
+    } else {
+      dateObj = new Date(property.createdAt);
+    }
+    
+    if (!isNaN(dateObj.getTime())) {
+      formattedDate = dateObj.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+  }
+
   if (style === 'classic') {
     return (
       <div className={`group bg-white border border-gray-200 rounded-[16px] overflow-hidden hover:shadow-lg transition-all duration-300 relative flex flex-col ${
@@ -112,12 +128,19 @@ export default function PropertyCard({ property }: { property: Property }) {
             <span>{property.features.area} m²</span>
           </div>
           
-          <div className="text-[20px] font-black text-gray-900 mt-auto flex items-baseline gap-2">
-            {formattedNumber} <span className="text-[16px]">€</span>
-            {property.oldPrice && property.oldPrice > property.price && (
-              <span className="text-[12px] text-gray-400 line-through ml-2 font-medium">
-                {new Intl.NumberFormat('ro-RO').format(property.oldPrice)} €
-              </span>
+          <div className="mt-auto flex items-end justify-between">
+            <div className="text-[20px] font-black text-gray-900 flex items-baseline gap-2">
+              {formattedNumber} <span className="text-[16px]">€</span>
+              {property.oldPrice && property.oldPrice > property.price && (
+                <span className="text-[12px] text-gray-400 line-through ml-2 font-medium">
+                  {new Intl.NumberFormat('ro-RO').format(property.oldPrice)} €
+                </span>
+              )}
+            </div>
+            {formattedDate && (
+              <div className="text-[12px] text-gray-400 font-medium">
+                {formattedDate}
+              </div>
             )}
           </div>
         </div>
