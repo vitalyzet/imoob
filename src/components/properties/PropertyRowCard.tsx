@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Crown, Sparkles, Bed, Bath, Square, ChevronLeft, ChevronRight, Users, Heart, Camera } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, Users, Heart, Camera, Tag } from 'lucide-react';
 import { Property } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import ContactModal from './ContactModal';
@@ -77,8 +77,18 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
           : 'border-transparent hover:border-gray-200'
       }`}
     >
+      {/* Promotion Ribbon */}
+      {property.promoType && (
+        <div className="absolute top-6 -left-2 z-20">
+          <div className="bg-[#139E69] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
+            <Tag size={14} /> Promoción
+          </div>
+          <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
+        </div>
+      )}
+
       {/* Image Container */}
-      <div className="relative aspect-[16/10] md:aspect-auto w-full md:w-[280px] lg:w-[340px] h-64 md:h-auto overflow-hidden shrink-0 group/img bg-slate-900">
+      <div className="relative aspect-[16/10] md:aspect-auto w-full md:w-[280px] lg:w-[340px] h-64 md:h-auto overflow-hidden shrink-0 group/img bg-slate-900 rounded-l-[24px]">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={currentImageIndex}
@@ -148,19 +158,6 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
             <Camera size={9} />
             <span>{property.images.length}</span>
           </div>
-        </div>
-
-        <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
-          {property.promoType === 'gold' && (
-            <span className="bg-[#f25c1a]/15 backdrop-blur-md text-[#f25c1a] px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#f25c1a]/30">
-              <Crown size={12} fill="currentColor" className="text-[#f25c1a]" /> PROMOVAT
-            </span>
-          )}
-          {property.promoType === 'standard' && (
-            <span className="bg-[#139E69]/15 backdrop-blur-md text-[#139E69] px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#139E69]/30">
-              <Sparkles size={12} fill="currentColor" className="text-[#139E69]" /> PROMOVAT
-            </span>
-          )}
         </div>
       </div>
 

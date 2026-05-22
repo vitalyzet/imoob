@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import AutoCard from '@/components/properties/AutoCard';
-import { Search, CarFront, Calendar, Fuel, SlidersHorizontal, X, Loader2, LayoutGrid, List, MapPin, Gauge } from 'lucide-react';
+import { Search, CarFront, Calendar, Fuel, SlidersHorizontal, X, Loader2, LayoutGrid, List, MapPin, Gauge, Tag } from 'lucide-react';
 import Link from 'next/link';
 
 
@@ -95,6 +95,7 @@ export default function AutoResultsContent() {
     transmission: auto.transmisie || auto.cutie || '',
     location: auto.city || '',
     image: auto.images?.[0] || '',
+    promoType: auto.promoType || null,
   });
 
   return (
@@ -415,7 +416,15 @@ export default function AutoResultsContent() {
               ) : filtered.map(auto => {
                 const d = mapForCard(auto);
                 return (
-                  <Link key={auto.id} href={`/auto/${auto.id}`} className="bg-white rounded-2xl border border-[#e2e8f0]/80 hover:border-sky-200 hover:shadow-lg transition-all flex overflow-hidden group">
+                  <Link key={auto.id} href={`/auto/${auto.id}`} className="bg-white rounded-2xl border border-[#e2e8f0]/80 hover:border-sky-200 hover:shadow-lg transition-all flex overflow-hidden group relative">
+                    {/* Promotion Ribbon for List View */}
+                    {auto.promoType && (
+                      <div className="absolute top-4 left-0 z-20">
+                        <div className="bg-[#0ea5e9] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[12px]">
+                          <Tag size={12} /> Promoción
+                        </div>
+                      </div>
+                    )}
                     <div className="w-[260px] h-[180px] shrink-0 overflow-hidden bg-[#f1f5f9] relative">
                       {d.image ? (
                         <img src={d.image} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
