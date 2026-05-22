@@ -5,7 +5,7 @@ import { ChevronLeft, Send, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp, updateDoc, doc, arrayRemove } from 'firebase/firestore';
 import Link from 'next/link';
 
 export default function MessagesPage() {
@@ -42,9 +42,18 @@ export default function MessagesPage() {
     return () => unsubscribe();
   }, [user]);
 
-  // Fetch messages for selected chat
+  // Fetch messages for selected chat and mark as read
   useEffect(() => {
-    if (!selectedChatId) return;
+    if (!selectedChatId || !user) return;
+    
+    // Mark as read
+    const chat = chats.find(c => c.id === selectedChatId);
+    if (chat && chat.unreadBy?.includes(user.uid)) {
+      updateDoc(doc(db, 'chats', selectedChatId), {
+        unreadBy: arrayRemove(user.uid)
+      }).catch(console.error);
+    }
+
     const q = query(collection(db, `chats/${selectedChatId}/messages`), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setMessages(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -66,7 +75,16 @@ export default function MessagesPage() {
       createdAt: serverTimestamp()
     });
     
-    // In a real app, we should also update the 'updatedAt' field of the chat document here
+    // Update the chat document with lastMessage and unread status
+    const chat = chats.find(c => c.id === selectedChatId);
+    if (chat) {
+      const otherUserId = chat.buyerId === user.uid ? chat.sellerId : chat.buyerId;
+      await updateDoc(doc(db, 'chats', selectedChatId), {
+        updatedAt: serverTimestamp(),
+        lastMessage: msg,
+        unreadBy: [otherUserId]
+      });
+    }
   };
 
   if (!user) return (
@@ -143,19 +161,24 @@ export default function MessagesPage() {
                 chats.map(chat => {
                   const otherUserRole = chat.buyerId === user.uid ? 'sellerName' : 'buyerName';
                   const chatName = chat[otherUserRole] || 'Usuario';
+                  const isUnread = chat.unreadBy?.includes(user.uid);
+                  
                   return (
                     <div 
                       key={chat.id} 
                       onClick={() => setSelectedChatId(chat.id)}
-                      className="p-4 border-b border-gray-50 cursor-pointer hover:bg-gray-50 transition-colors"
+                      className={`p-4 border-b border-gray-50 cursor-pointer transition-colors ${isUnread ? 'bg-[#f0f7ff] hover:bg-[#e6f2ff]' : 'hover:bg-gray-50'}`}
                     >
-                      <div className="flex gap-3">
+                      <div className="flex gap-3 relative">
                         <div className="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shrink-0 relative">
                           {chat.propertyImage && <Image src={chat.propertyImage} fill className="object-cover" alt="prop" />}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-[13px] text-gray-900 truncate">{chatName}</h4>
-                          <p className="text-[12px] text-gray-500 truncate">{chat.propertyTitle}</p>
+                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                          <div className="flex justify-between items-center mb-0.5">
+                            <h4 className={`text-[13px] truncate ${isUnread ? 'font-black text-blue-900' : 'font-bold text-gray-900'}`}>{chatName}</h4>
+                            {isUnread && <div className="w-2 h-2 rounded-full bg-blue-500 shrink-0"></div>}
+                          </div>
+                          <p className={`text-[12px] truncate ${isUnread ? 'text-blue-700 font-semibold' : 'text-gray-500'}`}>{chat.lastMessage || chat.propertyTitle}</p>
                         </div>
                       </div>
                     </div>

@@ -66,14 +66,16 @@ export default function ContactForm({ property }: ContactFormProps) {
           buyerName: user.displayName || 'Utilizator',
           sellerName: property.agent?.name || 'Vânzător',
           updatedAt: serverTimestamp(),
-          lastMessage: message
+          lastMessage: message,
+          unreadBy: [sellerId]
         });
         chatId = newChat.id;
       } else {
         // Update existing chat
         await updateDoc(doc(db, 'chats', chatId), {
           updatedAt: serverTimestamp(),
-          lastMessage: message
+          lastMessage: message,
+          unreadBy: [sellerId]
         });
       }
 
