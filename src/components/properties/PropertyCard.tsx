@@ -53,7 +53,7 @@ export default function PropertyCard({ property }: { property: Property }) {
         {property.promoType && (
           <div className="absolute top-4 -left-2 z-20">
             <div className="bg-[#139E69] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
-              <Tag size={14} /> Promoción
+              <Tag size={14} /> Promovat
             </div>
             <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
           </div>
@@ -77,6 +77,21 @@ export default function PropertyCard({ property }: { property: Property }) {
               </div>
             )}
           </div>
+          
+          {/* Promotion Badges (Bottom Left) */}
+          <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
+            {property.promoType === 'gold' && (
+              <span className="bg-white/95 backdrop-blur-md text-amber-500 px-3 py-1.5 font-black text-[9px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-amber-500/20">
+                <Crown size={12} fill="currentColor" /> PROMOVAT
+              </span>
+            )}
+            {property.promoType === 'standard' && (
+              <span className="bg-white/95 backdrop-blur-md text-[#139E69] px-3 py-1.5 font-black text-[9px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#139E69]/20">
+                <Sparkles size={12} fill="currentColor" /> PROMOVAT
+              </span>
+            )}
+          </div>
+
           {/* Photo Count */}
           <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-full flex items-center gap-1 text-[9px] font-bold z-10 border border-white/20 shadow-sm">
             <Camera size={9} />
@@ -133,7 +148,7 @@ export default function PropertyCard({ property }: { property: Property }) {
       {property.promoType && (
         <div className="absolute top-6 -left-2 z-20">
           <div className="bg-[#139E69] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
-            <Tag size={14} /> Promoción
+            <Tag size={14} /> Promovat
           </div>
           <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
         </div>
