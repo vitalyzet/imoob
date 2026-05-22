@@ -46,8 +46,8 @@ export default function PropertyCard({ property }: { property: Property }) {
 
   if (style === 'classic') {
     return (
-      <div className={`group bg-white border border-slate-100/50 rounded-[28px] p-2 hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all duration-500 relative ${
-        property.promoType === 'gold' ? 'border-2 border-amber-400/50' : ''
+      <div className={`group bg-white border border-gray-200 rounded-[16px] overflow-hidden hover:shadow-lg transition-all duration-300 relative flex flex-col ${
+        property.promoType === 'gold' ? 'border-2 border-amber-400' : ''
       }`}>
         {/* Promotion Ribbon */}
         {property.promoType && (
@@ -58,78 +58,66 @@ export default function PropertyCard({ property }: { property: Property }) {
             <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
           </div>
         )}
-        <Link href={`/propiedades/${property.slug}`} className="block relative h-64 rounded-2xl overflow-hidden mb-4">
-          <Image
-            src={property.images[0]}
-            alt={property.title}
-            fill
-            className="object-cover transition-transform duration-700 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          <div className="absolute top-4 right-4 text-white hover:scale-110 transition-transform cursor-pointer z-20">
-            <Heart size={24} strokeWidth={1.5} />
-          </div>
-          <div className={`absolute left-4 z-10 flex flex-col gap-1.5 ${property.promoType ? 'top-16' : 'top-4'}`}>
-            {property.oldPrice && property.oldPrice > property.price && (
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 rounded-full w-fit flex items-center gap-1.5 backdrop-blur-sm border border-white/20">
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7l10 10M17 7v10H7"/></svg>
-                Preț Redus
-              </div>
-            )}
+
+        <div className="relative h-56 w-full shrink-0">
+          <Link href={`/propiedades/${property.slug}`} className="block h-full w-full">
+            <Image
+              src={property.images[0]}
+              alt={property.title}
+              fill
+              className="object-cover transition-transform duration-700 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          </Link>
+          
+          {/* Heart Icon (Top Right) */}
+          <div className="absolute top-3 right-3 z-20">
+            <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-sm cursor-pointer hover:scale-110 transition-transform">
+              <Heart size={18} strokeWidth={2} className="text-gray-900" />
+            </div>
           </div>
           
-          {/* Promotion Badges (Bottom Left) */}
-          <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
-            {property.promoType === 'gold' && (
-              <span className="bg-white/95 backdrop-blur-md text-amber-500 px-3 py-1.5 font-black text-[9px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-amber-500/20">
-                <Crown size={12} fill="currentColor" /> PROMOVAT
-              </span>
-            )}
-            {property.promoType === 'standard' && (
-              <span className="bg-white/95 backdrop-blur-md text-[#139E69] px-3 py-1.5 font-black text-[9px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#139E69]/20">
-                <Sparkles size={12} fill="currentColor" /> PROMOVAT
-              </span>
-            )}
+          {/* Status Badge (Bottom Left) */}
+          <div className="absolute bottom-3 left-3 z-10">
+            <span className="bg-white/95 text-gray-700 px-3 py-1 text-[11px] font-bold rounded-lg shadow-sm border border-white/50">
+              {property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}
+            </span>
           </div>
+          
+          {/* Image Dots Indicator */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            <div className="w-1.5 h-1.5 rounded-full bg-white"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-white/50"></div>
+          </div>
+        </div>
 
-          {/* Photo Count */}
-          <div className="absolute bottom-3 right-3 bg-black/60 backdrop-blur-md text-white px-2 py-0.5 rounded-full flex items-center gap-1 text-[9px] font-bold z-10 border border-white/20 shadow-sm">
-            <Camera size={9} />
-            {property.images.length}
-          </div>
-        </Link>
-        <div className="px-2">
-          <div className="flex justify-between items-baseline mb-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="text-[24px] font-black text-gray-900 tracking-tight">
-                {formattedNumber} <span className="text-[16px] font-semibold text-gray-400 ml-0.5">€</span>
-              </div>
-              {property.oldPrice && property.oldPrice > property.price && (
-                <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md line-through">
-                  {new Intl.NumberFormat('ro-RO').format(property.oldPrice)} €
-                </span>
-              )}
-            </div>
-            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">{property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}</span>
-          </div>
+        <div className="p-4 flex flex-col flex-grow">
           <Link href={`/propiedades/${property.slug}`}>
-            <h3 className="font-medium text-gray-800 text-[15px] truncate mb-2 hover:text-[#f25c1a] transition-colors">{property.title}</h3>
+            <h3 className="font-bold text-gray-900 text-[16px] truncate mb-1 uppercase tracking-tight">{property.title}</h3>
           </Link>
-          <div className="flex items-center gap-3 text-gray-400 text-[13px] font-medium mt-2">
-            <span>{property.location.city}</span>
-            <span>•</span>
-            {property.type === 'camera' ? (
-              <>
-                <span>{property.roommateDetails?.nrPersoaneActual || 1} col.</span>
-                <span>•</span>
-              </>
-            ) : (
-              <>
-                <span>{property.features.bedrooms} pat.</span>
-                <span>•</span>
-              </>
-            )}
+          
+          <div className="text-[13px] text-gray-500 mb-3 line-clamp-1">
+            {property.location.city}{property.location.state ? `, ${property.location.state}` : ''}
+          </div>
+          
+          <div className="flex items-center gap-2 text-gray-500 text-[13px] mb-4">
+            <span>{property.type === 'camera' ? (property.roommateDetails?.nrPersoaneActual || 1) + ' col' : property.features.bedrooms + ' cam'}</span>
+            <span className="text-gray-300">•</span>
             <span>{property.features.bathrooms} băi</span>
+            <span className="text-gray-300">•</span>
+            <span>{property.features.area} m²</span>
+          </div>
+          
+          <div className="text-[20px] font-black text-gray-900 mt-auto flex items-baseline gap-2">
+            {formattedNumber} <span className="text-[16px]">€</span>
+            {property.oldPrice && property.oldPrice > property.price && (
+              <span className="text-[12px] text-gray-400 line-through ml-2 font-medium">
+                {new Intl.NumberFormat('ro-RO').format(property.oldPrice)} €
+              </span>
+            )}
           </div>
         </div>
       </div>
