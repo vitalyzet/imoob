@@ -19,6 +19,21 @@ export default function Hero() {
   const [city, setCity] = useState(''); // Default to empty (no city selected)
   const [firebaseProperties, setFirebaseProperties] = useState<any[]>([]);
   const [searchMode, setSearchMode] = useState<'classic' | 'professional'>('professional');
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('propertyCardStyle') as 'classic' | 'professional';
+      if (savedMode) setSearchMode(savedMode);
+
+      const handleStyleChange = (e: CustomEvent) => {
+        setSearchMode(e.detail);
+      };
+      window.addEventListener('card-style-changed', handleStyleChange as EventListener);
+      return () => {
+        window.removeEventListener('card-style-changed', handleStyleChange as EventListener);
+      };
+    }
+  }, []);
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
   const typeDropdownRef = useRef<HTMLDivElement>(null);
   
