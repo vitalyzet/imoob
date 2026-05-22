@@ -32,6 +32,7 @@ export default function FeaturedAutos() {
             transmission: d.cutie || '',
             location: d.city || '',
             image: d.images?.[0] || '',
+            promoType: d.promoType || (d.isPromoted ? 'standard' : null),
           };
         });
         setAutos(data);

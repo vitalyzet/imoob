@@ -50,7 +50,7 @@ export default function LatestAds() {
           images: d.images?.length > 0 ? d.images : ['https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&q=80&w=1000'],
           isNewConstruction: d.condition === 'new',
           featured: d.isPromoted === true,
-          promoType: d.promoType || null,
+          promoType: d.promoType || (d.isPromoted ? 'standard' : null),
           timestamp: d.createdAt?.toMillis ? d.createdAt.toMillis() : Date.now(),
         };
       });

@@ -95,7 +95,7 @@ export default function AutoResultsContent() {
     transmission: auto.transmisie || auto.cutie || '',
     location: auto.city || '',
     image: auto.images?.[0] || '',
-    promoType: auto.promoType || null,
+    promoType: auto.promoType || (auto.isPromoted ? 'standard' : null),
   });
 
   return (

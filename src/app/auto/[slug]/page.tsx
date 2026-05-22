@@ -145,7 +145,7 @@ export default function AutoDetailsPage() {
     transmission: a.transmisie || a.cutie || '',
     location: a.city || '',
     image: a.images?.[0] || '',
-    promoType: a.promoType || null,
+    promoType: a.promoType || (a.isPromoted ? 'standard' : null),
   });
 
   return (
