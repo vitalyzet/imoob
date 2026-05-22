@@ -15,6 +15,7 @@ export default function MessagesPage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const initialLoadRef = useRef(false);
 
   // Fetch all chats for this user
   useEffect(() => {
@@ -27,13 +28,14 @@ export default function MessagesPage() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const chatsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setChats(chatsData);
-      // Auto-select first chat if none selected
-      if (!selectedChatId && chatsData.length > 0) {
+      // Auto-select first chat if none selected only on initial load
+      if (!initialLoadRef.current && !selectedChatId && chatsData.length > 0) {
         setSelectedChatId(chatsData[0].id);
+        initialLoadRef.current = true;
       }
     });
     return () => unsubscribe();
-  }, [user, selectedChatId]);
+  }, [user]);
 
   // Fetch messages for selected chat
   useEffect(() => {
