@@ -99,8 +99,9 @@ export default function PropertyCard({ property }: { property: Property }) {
             <h3 className="font-bold text-gray-900 text-[16px] truncate mb-1 uppercase tracking-tight">{property.title}</h3>
           </Link>
           
-          <div className="text-[13px] text-gray-500 mb-3 line-clamp-1">
-            {property.location.city}{property.location.state ? `, ${property.location.state}` : ''}
+          <div className="flex items-center gap-1.5 text-[13px] text-gray-500 mb-3 line-clamp-1">
+            <MapPin size={14} className="shrink-0" />
+            <span className="truncate">{property.location.city}{property.location.state ? `, ${property.location.state}` : ''}</span>
           </div>
           
           <div className="flex items-center gap-2 text-gray-500 text-[13px] mb-4">
