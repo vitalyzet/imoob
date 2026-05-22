@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { MapPin, Heart, Calendar, Gauge, Fuel, Cog } from 'lucide-react';
+import { MapPin, Heart, Calendar, Gauge, Fuel, Cog, Tag } from 'lucide-react';
 
 interface AutoCardProps {
   auto: any;
@@ -20,10 +20,20 @@ export default function AutoCard({ auto }: AutoCardProps) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}
-      className="bg-white rounded-[24px] shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-300 border border-gray-100 overflow-hidden group cursor-pointer flex flex-col"
+      className="bg-white rounded-[24px] shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] transition-all duration-300 border border-gray-100 group cursor-pointer flex flex-col relative"
     >
+      {/* Promotion Ribbon */}
+      {auto.promoType && (
+        <div className="absolute top-6 -left-2 z-20">
+          <div className="bg-[#0ea5e9] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
+            <Tag size={14} /> Promoción
+          </div>
+          <div className="w-0 h-0 border-t-[6px] border-t-[#0284c7] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
+        </div>
+      )}
+
       {/* Imagen Header */}
-      <div className="relative h-56 overflow-hidden">
+      <div className="relative h-56 overflow-hidden rounded-t-[24px]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img 
           src={auto.image || "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=600"} 

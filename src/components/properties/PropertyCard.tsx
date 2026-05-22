@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { Bed, Bath, Square, MapPin, Heart, Crown, Sparkles, Star, TrendingUp, Users, Camera, Maximize, GitCommit } from 'lucide-react';
+import { Bed, Bath, Square, MapPin, Heart, Crown, Sparkles, Star, TrendingUp, Users, Camera, Maximize, GitCommit, Tag } from 'lucide-react';
 import { Property } from '@/lib/types';
 
 import { useState, useEffect } from 'react';
@@ -46,9 +46,18 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
   if (style === 'minimalist') {
     return (
-      <div className={`group bg-transparent overflow-hidden transition-all duration-500 relative ${
+      <div className={`group bg-transparent transition-all duration-500 relative ${
         property.promoType === 'gold' ? 'border-2 border-amber-400/50 rounded-2xl p-2' : ''
       }`}>
+        {/* Promotion Ribbon */}
+        {property.promoType && (
+          <div className="absolute top-4 -left-2 z-20">
+            <div className="bg-[#139E69] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
+              <Tag size={14} /> Promoción
+            </div>
+            <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
+          </div>
+        )}
         <Link href={`/propiedades/${property.slug}`} className="block relative h-64 rounded-2xl overflow-hidden mb-4">
           <Image
             src={property.images[0]}
@@ -61,11 +70,6 @@ export default function PropertyCard({ property }: PropertyCardProps) {
             <Heart size={24} strokeWidth={1.5} />
           </div>
           <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
-            {property.promoType && (
-              <div className="bg-white text-black px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-md rounded-md w-fit">
-                Promovat
-              </div>
-            )}
             {property.oldPrice && property.oldPrice > property.price && (
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 rounded-full w-fit flex items-center gap-1.5 backdrop-blur-sm border border-white/20">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7l10 10M17 7v10H7"/></svg>
@@ -125,6 +129,16 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         ? 'border-[#139E69]/20 shadow-sm'
         : 'border-gray-200'
     }`}>
+      {/* Promotion Ribbon */}
+      {property.promoType && (
+        <div className="absolute top-6 -left-2 z-20">
+          <div className="bg-[#139E69] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
+            <Tag size={14} /> Promoción
+          </div>
+          <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
+        </div>
+      )}
+
       {/* Image Container */}
       <div className="relative h-[250px] w-full overflow-hidden rounded-[24px] shrink-0">
         <Link href={`/propiedades/${property.slug}`}>
@@ -159,19 +173,6 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           </div>
         </div>
 
-        {/* Promotion Badges */}
-        <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
-          {property.promoType === 'gold' && (
-            <span className="bg-[#f25c1a]/15 backdrop-blur-md text-[#f25c1a] px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#f25c1a]/30">
-              <Crown size={12} fill="currentColor" className="text-[#f25c1a]" /> PROMOVAT
-            </span>
-          )}
-          {property.promoType === 'standard' && (
-            <span className="bg-[#139E69]/15 backdrop-blur-md text-[#139E69] px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#139E69]/30">
-              <Sparkles size={12} fill="currentColor" className="text-[#139E69]" /> PROMOVAT
-            </span>
-          )}
-        </div>
         
         {/* Floating Heart Button */}
         <div className="absolute top-4 right-4 w-10 h-10 bg-white/95 backdrop-blur rounded-full flex items-center justify-center shadow-md z-10 cursor-pointer hover:scale-110 transition-transform border border-gray-100">
