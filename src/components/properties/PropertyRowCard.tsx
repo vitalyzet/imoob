@@ -69,7 +69,7 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
   return (
     <div 
       onClick={() => router.push(`/propiedades/${property.slug}`)}
-      className={`group block bg-white rounded-[24px] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.08)] overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 relative border flex flex-col md:flex-row cursor-pointer ${
+      className={`group block bg-white rounded-[24px] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.08)] transition-all hover:shadow-xl hover:-translate-y-1 relative border cursor-pointer ${
         property.promoType === 'gold' 
           ? 'border-amber-400/50 shadow-[0_10px_35px_-12px_rgba(251,191,36,0.2)]'
           : property.promoType === 'standard'
@@ -87,8 +87,10 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
         </div>
       )}
 
-      {/* Image Container */}
-      <div className="relative aspect-[16/10] md:aspect-auto w-full md:w-[280px] lg:w-[340px] h-64 md:h-auto overflow-hidden shrink-0 group/img bg-slate-900 rounded-l-[24px]">
+      {/* Inner wrapper to handle overflow without cutting outer ribbon */}
+      <div className="flex flex-col md:flex-row w-full overflow-hidden rounded-[24px] [transform:translateZ(0)]">
+        {/* Image Container */}
+        <div className="relative aspect-[16/10] md:aspect-auto w-full md:w-[280px] lg:w-[340px] h-64 md:h-auto shrink-0 group/img bg-slate-900">
         <AnimatePresence initial={false} custom={direction}>
           <motion.div
             key={currentImageIndex}
@@ -261,6 +263,7 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
             </button>
           </div>
         </div>
+      </div>
       </div>
 
       <ContactModal 

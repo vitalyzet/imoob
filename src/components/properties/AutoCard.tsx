@@ -32,11 +32,13 @@ export default function AutoCard({ auto }: AutoCardProps) {
         </div>
       )}
 
-      {/* Imagen Header */}
-      <div className="relative h-56 overflow-hidden rounded-t-[24px]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img 
-          src={auto.image || "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=600"} 
+      {/* Inner wrapper to contain overflow without cutting the outer ribbon */}
+      <div className="flex-1 flex flex-col overflow-hidden rounded-[24px] [transform:translateZ(0)]">
+        {/* Imagen Header */}
+        <div className="relative h-56 shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img 
+            src={auto.image || "https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=600"} 
           alt={auto.title} 
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-in-out"
         />
@@ -115,6 +117,7 @@ export default function AutoCard({ auto }: AutoCardProps) {
             )}
           </div>
         </div>
+      </div>
       </div>
     </motion.div>
     </Link>

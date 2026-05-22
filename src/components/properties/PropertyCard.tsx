@@ -140,7 +140,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
       )}
 
       {/* Image Container */}
-      <div className="relative h-[250px] w-full overflow-hidden rounded-[24px] shrink-0">
+      <div className="relative h-[250px] w-full overflow-hidden rounded-[24px] shrink-0 [transform:translateZ(0)]">
         <Link href={`/propiedades/${property.slug}`}>
           <Image
             src={property.images[0]}
