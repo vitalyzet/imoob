@@ -35,11 +35,13 @@ export default function Navbar() {
   const [dashboardTitle, setDashboardTitle] = useState('Profil');
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [adsCount, setAdsCount] = useState<number>(0);
+  const [unreadMessages, setUnreadMessages] = useState<number>(0);
 
   useEffect(() => {
     if (!user) {
       setWalletBalance(0);
       setAdsCount(0);
+      setUnreadMessages(0);
       return;
     }
 
@@ -58,9 +60,23 @@ export default function Navbar() {
       console.log("[Navbar] Real-time ads count update:", snapshot.size);
     });
 
+    // 3. Real-time unread messages
+    const qChats = query(collection(db, 'chats'), where('participants', 'array-contains', user.uid));
+    const unsubChats = onSnapshot(qChats, (snapshot) => {
+      let unread = 0;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.unreadBy && data.unreadBy.includes(user.uid)) {
+          unread++;
+        }
+      });
+      setUnreadMessages(unread);
+    });
+
     return () => {
       unsubUser();
       unsubAds();
+      unsubChats();
     };
   }, [user]);
 
@@ -101,7 +117,7 @@ export default function Navbar() {
   const renderUserPanel = () => {
     const leftItems = [
       { icon: LayoutGrid, label: 'Profil', href: '/Profil' },
-      { icon: MessageSquare, label: 'Mesajele mele', href: '/Profil/messages' },
+      { icon: MessageSquare, label: 'Mesajele mele', href: '/Profil/messages', badge: unreadMessages > 0 ? unreadMessages : undefined },
       { icon: Phone, label: 'Anunțuri contactate', href: '/Profil/contacted' },
       { icon: Search, label: 'Căutările mele', href: '/Profil/searches' },
       { icon: ThumbsUp, label: 'Anunțuri recomandate', href: '/Profil/recommended' },
@@ -138,6 +154,11 @@ export default function Navbar() {
             >
               <item.icon size={22} strokeWidth={1.5} className="text-white/60 group-hover:text-white transition-colors flex-shrink-0" />
               <span className="text-sm font-medium flex-1">{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/10 shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           ))}
         </div>
@@ -208,11 +229,13 @@ export default function Navbar() {
                 <Mail size={24} strokeWidth={1.5} />
               </Link>
               
-              <Link href="/Profil/messages" className="text-white hover:text-white/80 transition-colors relative">
+              <Link href="/Profil/messages" className="text-white hover:text-white/80 transition-colors relative group">
                 <MessageSquare size={24} strokeWidth={1.5} />
-                <span className="absolute -top-1.5 -right-1.5 bg-white text-[#f25c1a] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-sm">
-                  0
-                </span>
+                {unreadMessages > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-white text-[#f25c1a] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-[0_0_12px_rgba(255,255,255,0.6)] animate-pulse">
+                    {unreadMessages}
+                  </span>
+                )}
               </Link>
               
               <div className="relative">
@@ -370,11 +393,16 @@ export default function Navbar() {
             <Mail size={24} strokeWidth={1.5} />
           </Link>
           
-          <Link href="/Profil" className={`${iconColor} ${hoverColor} transition-colors relative`}>
+          <Link href="/Profil/messages" className={`${iconColor} ${hoverColor} transition-colors relative group`}>
             <MessageSquare size={24} strokeWidth={1.5} />
-            <span className="absolute -top-2 -right-2 bg-[#ff6b00] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-transparent">
-              0
-            </span>
+            {unreadMessages > 0 && (
+              <>
+                <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[10px] font-bold min-w-[18px] h-[18px] px-1 rounded-full border-2 border-white flex items-center justify-center z-10 shadow-sm">
+                  {unreadMessages}
+                </span>
+                <span className="absolute -top-2 -right-2 bg-blue-400 w-[18px] h-[18px] rounded-full animate-ping opacity-75"></span>
+              </>
+            )}
           </Link>
           
           <div className="relative">
@@ -521,11 +549,16 @@ export default function Navbar() {
             </button>
           </div>
           
-          <Link href="/Profil" className={`${textColor} relative`}>
+          <Link href="/Profil/messages" className={`${textColor} relative group`}>
             <MessageSquare size={20} />
-            <span className="absolute -top-2 -right-2 bg-[#ff6b00] text-white text-[9px] font-bold px-1 rounded-full border border-transparent">
-              0
-            </span>
+            {unreadMessages > 0 && (
+              <>
+                <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-[9px] font-bold min-w-[16px] h-[16px] px-1 rounded-full border-2 border-white flex items-center justify-center z-10 shadow-sm">
+                  {unreadMessages}
+                </span>
+                <span className="absolute -top-2 -right-2 bg-blue-400 w-[16px] h-[16px] rounded-full animate-ping opacity-75"></span>
+              </>
+            )}
           </Link>
           {user ? (
             <div 
