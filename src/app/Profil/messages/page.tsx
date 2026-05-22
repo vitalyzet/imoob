@@ -22,11 +22,16 @@ export default function MessagesPage() {
     if (!user) return;
     const q = query(
       collection(db, 'chats'), 
-      where('participants', 'array-contains', user.uid), 
-      orderBy('updatedAt', 'desc')
+      where('participants', 'array-contains', user.uid)
     );
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const chatsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let chatsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      // Sort locally to avoid Firebase Index requirement
+      chatsData.sort((a: any, b: any) => {
+        const timeA = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
+        const timeB = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
+        return timeB - timeA;
+      });
       setChats(chatsData);
       // Auto-select first chat if none selected only on initial load
       if (!initialLoadRef.current && !selectedChatId && chatsData.length > 0) {
