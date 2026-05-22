@@ -608,7 +608,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
               <div className="space-y-6">
                 <h4 className="font-bold text-gray-900 text-[15px] mb-3 border-b border-gray-100 pb-2">Solicită informații sau vizită</h4>
                 
-                <ContactForm />
+                <ContactForm property={property} />
 
                 <SecondaryActions />
                 
