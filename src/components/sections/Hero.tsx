@@ -573,13 +573,21 @@ export default function Hero() {
             <>
 
           <button 
-            onClick={() => setSearchMode('classic')}
+            onClick={() => {
+              setSearchMode('classic');
+              localStorage.setItem('propertyCardStyle', 'classic');
+              window.dispatchEvent(new CustomEvent('card-style-changed', { detail: 'classic' }));
+            }}
             className={`flex items-center gap-2 transition-colors ${searchMode === 'classic' ? 'text-[var(--primary)] font-bold' : 'hover:text-[var(--primary)]'}`}
           >
             <Search size={16} /> Căutare clasică
           </button>
           <button 
-            onClick={() => setSearchMode('professional')}
+            onClick={() => {
+              setSearchMode('professional');
+              localStorage.setItem('propertyCardStyle', 'professional');
+              window.dispatchEvent(new CustomEvent('card-style-changed', { detail: 'professional' }));
+            }}
             className={`flex items-center gap-2 transition-colors ${searchMode === 'professional' ? 'text-[var(--primary)] font-bold' : 'hover:text-[var(--primary)]'}`}
           >
             <div className="flex gap-0.5"><div className="w-1 h-3 bg-current"/><div className="w-1 h-3 bg-current"/><div className="w-1 h-3 bg-current"/></div>
