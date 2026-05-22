@@ -50,13 +50,10 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
 
   if (style === 'minimalist') {
     return (
-      <Link 
-        href={`/propiedades/${property.slug}`}
-        className={`group block bg-transparent overflow-hidden transition-all duration-500 relative ${
-          property.promoType === 'gold' ? 'border-2 border-amber-400/50 rounded-2xl p-2' : ''
-        }`}
-      >
-        <div className="relative h-64 w-full rounded-2xl overflow-hidden mb-4">
+      <div className={`group block bg-white border border-slate-100/50 p-2 rounded-[28px] overflow-hidden transition-all duration-500 relative hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] ${
+        property.promoType === 'gold' ? 'border-2 border-amber-400/50' : ''
+      }`}>
+        <Link href={`/propiedades/${property.slug}`} className="block relative h-64 w-full rounded-[24px] overflow-hidden mb-4">
           <Image
             src={property.images[0]}
             alt={property.title}
@@ -87,9 +84,11 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
         <div className="px-2">
           <div className="flex justify-between items-baseline mb-1">
             <div className="text-[24px] font-black text-gray-900 tracking-tight">{formattedPrice}</div>
-            <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded-md">{property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}</span>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">{property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}</span>
           </div>
-          <h3 className="font-medium text-gray-800 text-[15px] truncate mb-2 hover:text-[#f25c1a] transition-colors">{property.title}</h3>
+          <Link href={`/propiedades/${property.slug}`}>
+            <h3 className="font-medium text-gray-800 text-[15px] truncate mb-2 hover:text-[#f25c1a] transition-colors">{property.title}</h3>
+          </Link>
           <div className="flex items-center gap-3 text-gray-400 text-[13px] font-medium mt-2">
             <span>{property.location.city}</span>
             <span>•</span>
@@ -98,7 +97,7 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
             <span>{property.features.bathrooms} băi</span>
           </div>
         </div>
-      </Link>
+      </div>
     );
   }
 

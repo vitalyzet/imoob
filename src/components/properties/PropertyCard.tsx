@@ -46,8 +46,8 @@ export default function PropertyCard({ property }: PropertyCardProps) {
 
   if (style === 'minimalist') {
     return (
-      <div className={`group bg-transparent transition-all duration-500 relative ${
-        property.promoType === 'gold' ? 'border-2 border-amber-400/50 rounded-2xl p-2' : ''
+      <div className={`group bg-white border border-slate-100/50 rounded-[28px] p-2 hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all duration-500 relative ${
+        property.promoType === 'gold' ? 'border-2 border-amber-400/50' : ''
       }`}>
         {/* Promotion Ribbon */}
         {property.promoType && (
@@ -95,7 +95,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
                 </span>
               )}
             </div>
-            <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest bg-gray-100 px-2 py-1 rounded-md">{property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}</span>
+            <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">{property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}</span>
           </div>
           <Link href={`/propiedades/${property.slug}`}>
             <h3 className="font-medium text-gray-800 text-[15px] truncate mb-2 hover:text-[#f25c1a] transition-colors">{property.title}</h3>
