@@ -44,7 +44,7 @@ export default function AutoCard({ auto }: AutoCardProps) {
         />
         
         {/* Top Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-1.5 z-10">
+        <div className={`absolute left-4 flex flex-col gap-1.5 z-10 ${auto.promoType ? 'top-16' : 'top-4'}`}>
           <span className="bg-black/40 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider w-fit">
             {auto.year || 2022}
           </span>

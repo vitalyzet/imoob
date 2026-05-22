@@ -130,7 +130,7 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
           <ChevronRight size={18} strokeWidth={3} />
         </button>
         
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+        <div className={`absolute left-4 z-10 flex flex-col gap-1.5 ${property.promoType ? 'top-16' : 'top-4'}`}>
           <span className={`px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg border outline outline-4 outline-black/5 ${property.status === 'for-rent' || property.type === 'camera' ? 'bg-[#139E69] text-white border-emerald-400/20' : 'bg-slate-900 text-white border-slate-700/20'}`}>
             {property.type === 'camera' ? 'Cameră de închiriat' : property.status === 'for-rent' ? 'De închiriat' : 'De vânzare'}
           </span>

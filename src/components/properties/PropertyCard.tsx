@@ -69,7 +69,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           <div className="absolute top-4 right-4 text-white hover:scale-110 transition-transform cursor-pointer z-20">
             <Heart size={24} strokeWidth={1.5} />
           </div>
-          <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+          <div className={`absolute left-4 z-10 flex flex-col gap-1.5 ${property.promoType ? 'top-16' : 'top-4'}`}>
             {property.oldPrice && property.oldPrice > property.price && (
               <div className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 rounded-full w-fit flex items-center gap-1.5 backdrop-blur-sm border border-white/20">
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7l10 10M17 7v10H7"/></svg>
@@ -151,7 +151,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
           />
         </Link>
         
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+        <div className={`absolute left-4 z-10 flex flex-col gap-1.5 ${property.promoType ? 'top-16' : 'top-4'}`}>
           <span className={`px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg border outline outline-4 outline-black/5 ${property.status === 'for-rent' || property.type === 'camera' ? 'bg-[#139E69] text-white border-emerald-400/20' : 'bg-slate-900 text-white border-slate-700/20'}`}>
             {property.type === 'camera' ? 'Cameră de închiriat' : property.status === 'for-rent' ? 'De închiriat' : 'De vânzare'}
           </span>
