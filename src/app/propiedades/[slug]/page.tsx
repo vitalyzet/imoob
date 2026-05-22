@@ -100,7 +100,8 @@ async function getPropertyData(slug: string) {
       views: d.views || Math.floor(Math.random() * 200) + 20,
       favoritesCount: d.favoritesCount || Math.floor(Math.random() * 15) + 5,
       agent: {
-        id: d.email || 'anonimo',
+        id: d.userId || d.uid || d.email || 'anonimo',
+        email: d.email || '',
         name: d.name || 'Proprietar Anonim',
         role: "Proprietar Particular",
         phone: d.phone || "+40 000 000 000",
@@ -146,7 +147,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     // 1. Fetch seller properties (limit to 2)
     const sq = query(
       collection(db, 'anuncios'), 
-      where('email', '==', property.agent.id),
+      where('email', '==', property.agent.email),
       where('status', '==', 'active')
     );
     const sSnap = await getDocs(sq);
@@ -178,7 +179,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       where('status', '==', 'active')
     );
     let gSnap = await getDocs(localGQ);
-    let sponsoredMatches = gSnap.docs.filter(doc => doc.id !== property.id && doc.data().email !== property.agent.id);
+    let sponsoredMatches = gSnap.docs.filter(doc => doc.id !== property.id && doc.data().email !== property.agent.email);
 
     // Priority 2: Fallback to any Gold ads if no local match
     if (sponsoredMatches.length === 0) {
@@ -188,7 +189,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
         where('status', '==', 'active')
       );
       gSnap = await getDocs(globalGQ);
-      sponsoredMatches = gSnap.docs.filter(doc => doc.id !== property.id && doc.data().email !== property.agent.id);
+      sponsoredMatches = gSnap.docs.filter(doc => doc.id !== property.id && doc.data().email !== property.agent.email);
     }
 
     const sponsoredProperties = sponsoredMatches
