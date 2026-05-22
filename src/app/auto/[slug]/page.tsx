@@ -25,7 +25,8 @@ export default function AutoDetailsPage() {
       try {
         const docRef = doc(db, 'anuncios_auto', slug);
         const snap = await getDoc(docRef);
-          const autoData = { id: snap.id, ...snap.data() };
+        if (snap.exists()) {
+          const autoData = { id: snap.id, ...snap.data() } as any;
           setAuto(autoData);
           
           // Fetch similar cars
