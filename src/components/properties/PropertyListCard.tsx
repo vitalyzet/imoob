@@ -12,13 +12,13 @@ interface PropertyListCardProps {
 }
 
 export default function PropertyListCard({ property }: PropertyListCardProps) {
-  const [style, setStyle] = useState<'classic' | 'minimalist'>('classic');
+  const [style, setStyle] = useState<'classic' | 'professional'>('classic');
 
   const [logo, setLogo] = useState<string | null>(null);
 
   useEffect(() => {
     // Initial load
-    const savedStyle = localStorage.getItem('propertyCardStyle') as 'classic' | 'minimalist';
+    const savedStyle = localStorage.getItem('propertyCardStyle') as 'classic' | 'professional';
     if (savedStyle) setStyle(savedStyle);
 
     const savedLogo = localStorage.getItem('imoob_user_logo');
@@ -48,7 +48,7 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
     maximumFractionDigits: 0,
   }).format(property.price);
 
-  if (style === 'minimalist') {
+  if (style === 'classic') {
     return (
       <div className={`group block bg-white border border-slate-100/50 p-2 rounded-[28px] overflow-hidden transition-all duration-500 relative hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] ${
         property.promoType === 'gold' ? 'border-2 border-amber-400/50' : ''

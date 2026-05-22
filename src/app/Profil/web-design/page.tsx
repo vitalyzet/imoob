@@ -7,13 +7,13 @@ import PremiumHeader from '@/components/layout/PremiumHeader';
 import PremiumFooter from '@/components/layout/PremiumFooter';
 
 export default function WebDesignPage() {
-  const [selectedStyle, setSelectedStyle] = useState<'classic' | 'minimalist'>('classic');
+  const [selectedStyle, setSelectedStyle] = useState<'classic' | 'professional'>('classic');
   const [isSaved, setIsSaved] = useState(false);
 
   // Initialize from localStorage
   useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('propertyCardStyle') as 'classic' | 'minimalist';
+      const saved = localStorage.getItem('propertyCardStyle') as 'classic' | 'professional';
       if (saved) setSelectedStyle(saved);
     }
   });
@@ -69,24 +69,24 @@ export default function WebDesignPage() {
 
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
           
-          {/* Style 1: Classic & Clean */}
+          {/* Style 1: Profesional (Old Classic & Clean) */}
           <div 
-            onClick={() => setSelectedStyle('classic')}
+            onClick={() => setSelectedStyle('professional')}
             className={`relative rounded-3xl p-4 cursor-pointer transition-all duration-300 border-2 ${
-              selectedStyle === 'classic' 
+              selectedStyle === 'professional' 
                 ? 'border-[#f25c1a] bg-orange-50/30 shadow-[0_10px_30px_-10px_rgba(242,92,26,0.2)]' 
                 : 'border-transparent hover:bg-gray-50'
             }`}
           >
             <div className="absolute top-6 right-6 z-10">
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                selectedStyle === 'classic' ? 'border-[#f25c1a] bg-[#f25c1a]' : 'border-gray-300 bg-white'
+                selectedStyle === 'professional' ? 'border-[#f25c1a] bg-[#f25c1a]' : 'border-gray-300 bg-white'
               }`}>
-                {selectedStyle === 'classic' && <CheckCircle2 size={14} className="text-white" />}
+                {selectedStyle === 'professional' && <CheckCircle2 size={14} className="text-white" />}
               </div>
             </div>
 
-            <h3 className="text-[15px] font-bold text-gray-900 mb-6 px-2">Stil Clasic & Luminos</h3>
+            <h3 className="text-[15px] font-bold text-gray-900 mb-6 px-2">Stil Profesional</h3>
 
             {/* Mockup Card 1 */}
             <div className="bg-white rounded-[24px] border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all pointer-events-none">
@@ -115,24 +115,24 @@ export default function WebDesignPage() {
             </div>
           </div>
 
-          {/* Style 4: Ultra Minimalist (Border-less, Huge Image, Tiny text) */}
+          {/* Style 2: Classic (New Ultra Minimalist Layout) */}
           <div 
-            onClick={() => setSelectedStyle('minimalist')}
+            onClick={() => setSelectedStyle('classic')}
             className={`relative rounded-3xl p-4 cursor-pointer transition-all duration-300 border-2 ${
-              selectedStyle === 'minimalist' 
+              selectedStyle === 'classic' 
                 ? 'border-[#f25c1a] bg-orange-50/30 shadow-[0_10px_30px_-10px_rgba(242,92,26,0.2)]' 
                 : 'border-transparent hover:bg-gray-50'
             }`}
           >
             <div className="absolute top-6 right-6 z-10">
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                selectedStyle === 'minimalist' ? 'border-[#f25c1a] bg-[#f25c1a]' : 'border-gray-300 bg-white'
+                selectedStyle === 'classic' ? 'border-[#f25c1a] bg-[#f25c1a]' : 'border-gray-300 bg-white'
               }`}>
-                {selectedStyle === 'minimalist' && <CheckCircle2 size={14} className="text-white" />}
+                {selectedStyle === 'classic' && <CheckCircle2 size={14} className="text-white" />}
               </div>
             </div>
 
-            <h3 className="text-[15px] font-bold text-gray-900 mb-6 px-2">Stil Ultra-Minimalist</h3>
+            <h3 className="text-[15px] font-bold text-gray-900 mb-6 px-2">Stil Clasic</h3>
 
             {/* Mockup Card 4 */}
             <div className="bg-transparent overflow-hidden transition-all pointer-events-none group">

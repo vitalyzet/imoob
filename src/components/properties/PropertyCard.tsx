@@ -9,14 +9,14 @@ interface PropertyCardProps {
   property: Property;
 }
 
-export default function PropertyCard({ property }: PropertyCardProps) {
-  const [style, setStyle] = useState<'classic' | 'minimalist'>('classic');
+export default function PropertyCard({ property }: { property: Property }) {
+  const [style, setStyle] = useState<'classic' | 'professional'>('classic');
 
   const [logo, setLogo] = useState<string | null>(null);
 
   useEffect(() => {
     // Initial load
-    const savedStyle = localStorage.getItem('propertyCardStyle') as 'classic' | 'minimalist';
+    const savedStyle = localStorage.getItem('propertyCardStyle') as 'classic' | 'professional';
     if (savedStyle) setStyle(savedStyle);
 
     const savedLogo = localStorage.getItem('imoob_user_logo');
@@ -44,7 +44,7 @@ export default function PropertyCard({ property }: PropertyCardProps) {
     maximumFractionDigits: 0,
   }).format(property.price);
 
-  if (style === 'minimalist') {
+  if (style === 'classic') {
     return (
       <div className={`group bg-white border border-slate-100/50 rounded-[28px] p-2 hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] transition-all duration-500 relative ${
         property.promoType === 'gold' ? 'border-2 border-amber-400/50' : ''
@@ -180,40 +180,71 @@ export default function PropertyCard({ property }: PropertyCardProps) {
         </div>
       </div>
       
-      <div className="px-3 pt-4 pb-3 flex-grow flex flex-col">
-        <div className="flex justify-between items-baseline mb-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <div className="text-[24px] font-black text-gray-900 tracking-tight">
-              {formattedNumber} <span className="text-[16px] font-semibold text-gray-400 ml-0.5">€</span>
-            </div>
+      <div className="px-3 pt-4 pb-2 flex-grow flex flex-col">
+        {/* Location & Price Row */}
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center gap-1.5 text-[#6b7280]">
+            <MapPin size={16} className="text-gray-400" fill="currentColor" strokeWidth={0.5} />
+            <span className="text-[15px]">{[property.location.city, property.location.state].filter(Boolean).join(', ')}</span>
+          </div>
+          <div className="flex flex-col items-end">
             {property.oldPrice && property.oldPrice > property.price && (
-              <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md line-through">
+              <span className="text-[11px] font-bold text-gray-400 line-through">
                 {new Intl.NumberFormat('ro-RO').format(property.oldPrice)} €
               </span>
             )}
+            <div className="text-[20px] md:text-[22px] font-bold text-[#111827] tracking-tight">
+              {formattedNumber}<span className="text-[18px]">€</span>
+            </div>
           </div>
-          <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">
-            {property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}
-          </span>
         </div>
+
+        {/* Title */}
         <Link href={`/propiedades/${property.slug}`}>
-          <h3 className="font-medium text-gray-800 text-[15px] truncate mb-2 hover:text-[#139E69] transition-colors">{property.title}</h3>
+          <h3 className="text-[17px] md:text-[18px] font-semibold text-[#111827] leading-snug mb-5 line-clamp-2 hover:text-[#139E69] transition-colors">
+            {property.title}
+          </h3>
         </Link>
-        <div className="flex items-center gap-3 text-gray-400 text-[13px] font-medium mt-auto">
-          <span>{property.location.city}</span>
-          <span>•</span>
+
+        {/* Features Row */}
+        <div className="flex items-center justify-between mt-auto">
           {property.type === 'camera' ? (
             <>
-              <span>{property.roommateDetails?.nrPersoaneActual || 1} col.</span>
-              <span>•</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-[#f4f4f5] flex items-center justify-center text-gray-700 shrink-0">
+                  <Users size={16} />
+                </div>
+                <span className="text-[14px] text-gray-800 font-medium whitespace-nowrap">{property.roommateDetails?.nrPersoaneActual || 1} col</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-[#f4f4f5] flex items-center justify-center text-gray-700 shrink-0">
+                  <Bath size={16} />
+                </div>
+                <span className="text-[14px] text-gray-800 font-medium whitespace-nowrap">{property.features.bathrooms} băi</span>
+              </div>
             </>
           ) : (
             <>
-              <span>{property.features.bedrooms} pat.</span>
-              <span>•</span>
+              <div className="flex items-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-[#f4f4f5] flex items-center justify-center text-gray-700 shrink-0">
+                  <Bed size={16} />
+                </div>
+                <span className="text-[14px] text-gray-800 font-medium whitespace-nowrap">{property.features.bedrooms} cam</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-[#f4f4f5] flex items-center justify-center text-gray-700 shrink-0">
+                  <Bath size={16} />
+                </div>
+                <span className="text-[14px] text-gray-800 font-medium whitespace-nowrap">{property.features.bathrooms} băi</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-9 h-9 rounded-xl bg-[#f4f4f5] flex items-center justify-center text-gray-700 shrink-0">
+                  <Maximize size={16} />
+                </div>
+                <span className="text-[14px] text-gray-800 font-medium whitespace-nowrap">{property.features.area} mp</span>
+              </div>
             </>
           )}
-          <span>{property.features.bathrooms} băi</span>
         </div>
       </div>
     </div>
