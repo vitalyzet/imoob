@@ -7,7 +7,7 @@ export const agents: Agent[] = [
     role: 'Director Comercial',
     image: '/images/team/carlos.jpg',
     phone: '+34 612 345 678',
-    email: 'carlos@xmobe.com',
+    email: 'carlos@vindu24.com',
   },
   {
     id: '2',
@@ -15,7 +15,7 @@ export const agents: Agent[] = [
     role: 'Agente Senior',
     image: '/images/team/maria.jpg',
     phone: '+34 623 456 789',
-    email: 'maria@xmobe.com',
+    email: 'maria@vindu24.com',
   },
   {
     id: '3',
@@ -23,7 +23,7 @@ export const agents: Agent[] = [
     role: 'Asesor Inmobiliario',
     image: '/images/team/alejandro.jpg',
     phone: '+34 634 567 890',
-    email: 'alejandro@xmobe.com',
+    email: 'alejandro@vindu24.com',
   },
   {
     id: '4',
@@ -31,7 +31,7 @@ export const agents: Agent[] = [
     role: 'Directora de Marketing',
     image: '/images/team/laura.jpg',
     phone: '+34 645 678 901',
-    email: 'laura@xmobe.com',
+    email: 'laura@vindu24.com',
   },
 ];
 

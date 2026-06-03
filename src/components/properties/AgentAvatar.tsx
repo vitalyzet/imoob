@@ -13,7 +13,7 @@ export default function AgentAvatar({ initialImage, name }: AgentAvatarProps) {
 
   useEffect(() => {
     // Check if there's a local logo (for the current user viewing their own ad)
-    const localLogo = localStorage.getItem('xmobe_user_logo');
+    const localLogo = localStorage.getItem('vindu24_user_logo');
     if (localLogo) {
       setImage(localLogo);
     }

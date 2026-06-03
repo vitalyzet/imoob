@@ -357,7 +357,7 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
             </div>
             <div className="flex items-center gap-1.5 text-[13px] text-gray-500 pt-1 flex-wrap">
               <span className="font-medium text-gray-400">Ești în:</span>
-              <span className="text-gray-500">Xmobe</span>
+              <span className="text-gray-500">Vindu24</span>
               <ChevronRight size={12} className="text-gray-300" />
               <span className="text-gray-500">{breadcrumbOperation}</span>
               <ChevronRight size={12} className="text-gray-300" />

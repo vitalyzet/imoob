@@ -20,7 +20,7 @@ export default function PropertyCard({ property }: { property: Property }) {
     const savedStyle = localStorage.getItem('propertyCardStyle') as 'classic' | 'professional';
     if (savedStyle) setStyle(savedStyle);
 
-    const savedLogo = localStorage.getItem('xmobe_user_logo');
+    const savedLogo = localStorage.getItem('vindu24_user_logo');
     if (savedLogo) setLogo(savedLogo);
 
     // Listen for changes across the app

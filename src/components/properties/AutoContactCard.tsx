@@ -171,7 +171,7 @@ export default function AutoContactCard({ seller, auto }: AutoContactCardProps) 
             </span>
             <span className="flex items-center gap-1 text-[11px] text-[#94a3b8] font-medium">
               <Clock size={11} />
-              Pe Xmobe din {seller?.memberSince || '2026'}
+              Pe Vindu24 din {seller?.memberSince || '2026'}
             </span>
           </div>
         </div>

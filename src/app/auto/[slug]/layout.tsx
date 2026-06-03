@@ -23,8 +23,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     if (autoData) {
-      const title = `${autoData.marca || ''} ${autoData.model || ''}`.trim() + ' | xmobe';
-      const description = autoData.description?.substring(0, 160) || 'Detalii despre acest vehicul pe xmobe.';
+      const title = `${autoData.marca || ''} ${autoData.model || ''}`.trim() + ' | vindu24';
+      const description = autoData.description?.substring(0, 160) || 'Detalii despre acest vehicul pe vindu24.';
       
       return {
         title,
@@ -41,8 +41,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: 'Vehicul | xmobe',
-    description: 'Anunț auto pe xmobe.'
+    title: 'Vehicul | vindu24',
+    description: 'Anunț auto pe vindu24.'
   };
 }
 

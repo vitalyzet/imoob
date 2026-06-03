@@ -395,7 +395,7 @@ export default function MyAdsPage() {
               În moderare
             </div>
             <span className="text-[12px] font-bold text-gray-500 tracking-tight">
-              Anunțul tău este verificat de echipa <span className="text-gray-900">Xmobe</span> și va fi <span className="text-gray-900">activat în cel mult 24 de ore</span>.
+              Anunțul tău este verificat de echipa <span className="text-gray-900">Vindu24</span> și va fi <span className="text-gray-900">activat în cel mult 24 de ore</span>.
             </span>
           </div>
         </div>

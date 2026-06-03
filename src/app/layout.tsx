@@ -15,10 +15,10 @@ const ubuntu = Ubuntu({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Xmobe - Inmobiliaria',
-    default: 'Xmobe | Servicios Inmobiliarios',
+    template: '%s | Vindu24 - Inmobiliaria',
+    default: 'Vindu24 | Servicios Inmobiliarios',
   },
-  description: 'Xmobe. Innovación y tecnología al servicio del sector inmobiliario. Encontramos la propiedad perfecta para usted.',
+  description: 'Vindu24. Innovación y tecnología al servicio del sector inmobiliario. Encontramos la propiedad perfecta para usted.',
 };
 
 export default function RootLayout({

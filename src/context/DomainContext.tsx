@@ -23,7 +23,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Load from localStorage if available
-    const savedDomain = localStorage.getItem('xmobe_domain') as DomainMode;
+    const savedDomain = localStorage.getItem('vindu24_domain') as DomainMode;
     if (savedDomain === 'auto' || savedDomain === 'imobiliare') {
       setDomainState(savedDomain);
     }
@@ -41,7 +41,7 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
     }
     
     // Save to localStorage
-    localStorage.setItem('xmobe_domain', domain);
+    localStorage.setItem('vindu24_domain', domain);
   }, [domain, mounted]);
 
   const setDomain = (newDomain: DomainMode) => {
@@ -124,9 +124,9 @@ export function DomainProvider({ children }: { children: React.ReactNode }) {
               </div>
             </div>
 
-            {/* XMOBE wordmark */}
+            {/* VINDU24 wordmark */}
             <div className="flex flex-col items-center gap-3">
-              <span className="text-white/90 text-[22px] font-black tracking-[0.15em]">XMOBE</span>
+              <span className="text-white/90 text-[22px] font-black tracking-[0.15em]">VINDU24</span>
               <span className="text-white/40 text-[12px] font-medium tracking-widest uppercase">
                 {targetDomain === 'auto' ? 'Vehicule' : 'Imobiliare'}
               </span>

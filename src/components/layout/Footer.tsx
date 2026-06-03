@@ -134,7 +134,7 @@ export default function Footer() {
           </div>
           
           <p className="text-gray-500 text-xs font-medium">
-            © {currentYear} Xmobe. Toate drepturile rezervate.
+            © {currentYear} Vindu24. Toate drepturile rezervate.
           </p>
         </div>
       </div>

@@ -3,7 +3,7 @@ import { MapPin, Phone, Mail, Clock } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Contacto',
-  description: 'Póngase en contacto con Xmobe. Nuestros asesores inmobiliarios están a su disposición para ayudarle a encontrar su propiedad de lujo.',
+  description: 'Póngase en contacto con Vindu24. Nuestros asesores inmobiliarios están a su disposición para ayudarle a encontrar su propiedad de lujo.',
 };
 
 export default function Contacto() {
@@ -105,8 +105,8 @@ export default function Contacto() {
                   <Mail size={24} className="text-[#139E69] shrink-0 mt-1" />
                   <div>
                     <h4 className="font-bold uppercase tracking-wider mb-2">Email</h4>
-                    <p className="text-gray-400">info@xmobe.com</p>
-                    <p className="text-gray-400">sales@xmobe.com</p>
+                    <p className="text-gray-400">info@vindu24.com</p>
+                    <p className="text-gray-400">sales@vindu24.com</p>
                   </div>
                 </div>
 

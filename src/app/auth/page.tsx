@@ -128,7 +128,7 @@ export default function AuthPage() {
           </div>
 
           <div className="relative z-10 mt-12 bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
-             <p className="text-sm font-medium leading-relaxed italic text-emerald-50">"Xmobe me permitió vender mi casa en 2 semanas sin comisiones abusivas. Una tecnología impecable."</p>
+             <p className="text-sm font-medium leading-relaxed italic text-emerald-50">"Vindu24 me permitió vender mi casa en 2 semanas sin comisiones abusivas. Una tecnología impecable."</p>
              <div className="mt-4 flex items-center gap-3">
                <div className="w-8 h-8 rounded-full bg-emerald-800 border-2 border-white/50 overflow-hidden">
                  {/* eslint-disable-next-line @next/next/no-img-element */}

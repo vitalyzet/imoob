@@ -38,7 +38,7 @@ const getHeaderInfo = (pathname: string) => {
   if (pathname.includes('/my-ads')) return { title: 'Anunțurile mele', subtitle: 'Gestionați anunțurile și performanța' };
   if (pathname.includes('/promote-ads')) return { title: 'Promovează anunțuri', subtitle: 'Dezbate și atrage mai mulți clienți' };
   if (pathname.includes('/web-design')) return { title: 'Design Web', subtitle: 'Pachete și servicii premium de design' };
-  return { title: 'Profil', subtitle: 'Personalizează-ți experiența Xmobe' };
+  return { title: 'Profil', subtitle: 'Personalizează-ți experiența Vindu24' };
 };
 
 export default function ProfilLayout({ children }: { children: React.ReactNode }) {

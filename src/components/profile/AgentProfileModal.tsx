@@ -340,7 +340,7 @@ export default function AgentProfileModal() {
                                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-1 mb-2">
                                     <div>
                                       <h4 className="font-bold text-slate-800 text-[15px]">{review.user}</h4>
-                                      <span className="text-[12px] text-slate-400">Membru de 3 ani pe Xmobe</span>
+                                      <span className="text-[12px] text-slate-400">Membru de 3 ani pe Vindu24</span>
                                     </div>
                                     <div className="flex flex-col sm:items-end">
                                       <div className="flex text-slate-800">

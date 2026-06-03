@@ -105,7 +105,7 @@ export default function PremiumFooter() {
                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-emerald-500">
                     <Mail size={16} />
                  </div>
-                 contact@xmobe.ro
+                 contact@vindu24.ro
                </div>
                <div className="flex items-center gap-3 text-sm">
                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-emerald-500">
@@ -120,7 +120,7 @@ export default function PremiumFooter() {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:row items-center justify-between gap-6 text-xs font-medium uppercase tracking-widest">
-          <p>© {currentYear} Xmobe. Todos los derechos reservados.</p>
+          <p>© {currentYear} Vindu24. Todos los derechos reservados.</p>
           <div className="flex gap-8">
             <Link href="#" className="hover:text-white transition-colors">Sitemap</Link>
             <Link href="#" className="hover:text-white transition-colors">Seguridad</Link>

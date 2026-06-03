@@ -8,7 +8,7 @@ export function useFavorites() {
 
   useEffect(() => {
     try {
-      const stored = localStorage.getItem('xmobe_favorites');
+      const stored = localStorage.getItem('vindu24_favorites');
       if (stored) {
         setFavorites(JSON.parse(stored));
       }
@@ -21,7 +21,7 @@ export function useFavorites() {
   useEffect(() => {
     const handleSync = () => {
       try {
-        const stored = localStorage.getItem('xmobe_favorites');
+        const stored = localStorage.getItem('vindu24_favorites');
         if (stored) {
           setFavorites(JSON.parse(stored));
         } else {
@@ -50,7 +50,7 @@ export function useFavorites() {
         newFavorites = [...prev, propertyId];
       }
       
-      localStorage.setItem('xmobe_favorites', JSON.stringify(newFavorites));
+      localStorage.setItem('vindu24_favorites', JSON.stringify(newFavorites));
       window.dispatchEvent(new Event('favorites-updated'));
       return newFavorites;
     });

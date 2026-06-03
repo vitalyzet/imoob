@@ -159,7 +159,7 @@ export default function GalleryModal({ isOpen, onClose, onImageClick, images, ti
                       </span>
                       <span className="text-[12px] font-medium text-slate-400 flex items-center gap-1.5">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                        Pe Xmobe din 2024
+                        Pe Vindu24 din 2024
                       </span>
                     </div>
                   </div>

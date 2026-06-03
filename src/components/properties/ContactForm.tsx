@@ -16,8 +16,8 @@ export default function ContactForm({ property }: ContactFormProps) {
   const router = useRouter();
   const { domain } = useDomain();
   const defaultMessage = domain === 'auto' 
-    ? 'Bună ziua, am văzut acest autoturism pe Xmobe și mă interesează să primesc mai multe informații. Vă mulțumesc!'
-    : 'Bună ziua, am văzut această proprietate pe Xmobe și mă interesează să primesc mai multe informații. Vă mulțumesc!';
+    ? 'Bună ziua, am văzut acest autoturism pe Vindu24 și mă interesează să primesc mai multe informații. Vă mulțumesc!'
+    : 'Bună ziua, am văzut această proprietate pe Vindu24 și mă interesează să primesc mai multe informații. Vă mulțumesc!';
   const [message, setMessage] = useState(defaultMessage);
   const [loading, setLoading] = useState(false);
   const [existingChatId, setExistingChatId] = useState<string | null>(null);

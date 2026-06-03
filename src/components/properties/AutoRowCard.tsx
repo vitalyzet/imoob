@@ -19,7 +19,7 @@ export default function AutoRowCard({ auto }: AutoRowCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    const savedLogo = localStorage.getItem('xmobe_user_logo');
+    const savedLogo = localStorage.getItem('vindu24_user_logo');
     if (savedLogo) setLogo(savedLogo);
 
     const handleLogoChange = (e: CustomEvent) => {

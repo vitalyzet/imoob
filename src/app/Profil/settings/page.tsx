@@ -184,7 +184,7 @@ export default function SettingsPage() {
 
   // Load logo and user profile details
   useEffect(() => {
-    const savedLogo = localStorage.getItem('xmobe_user_logo');
+    const savedLogo = localStorage.getItem('vindu24_user_logo');
     if (savedLogo) setLogo(savedLogo);
 
     if (user) {
@@ -226,7 +226,7 @@ export default function SettingsPage() {
       reader.onloadend = () => {
         const base64 = reader.result as string;
         setLogo(base64);
-        localStorage.setItem('xmobe_user_logo', base64);
+        localStorage.setItem('vindu24_user_logo', base64);
         // Trigger a custom event so other components know the logo changed
         window.dispatchEvent(new CustomEvent('user-logo-changed', { detail: base64 }));
       };

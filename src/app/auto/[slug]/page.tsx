@@ -205,7 +205,7 @@ export default function AutoDetailsPage() {
               </button>
               
               <div className="flex items-center gap-2 text-[13px] text-gray-500 font-medium">
-                <Link href="/" className="hover:text-[var(--primary)] transition-colors hidden sm:block">xmobe</Link>
+                <Link href="/" className="hover:text-[var(--primary)] transition-colors hidden sm:block">vindu24</Link>
                 <span className="text-gray-300 hidden sm:block">/</span>
                 <Link href="/auto" className="hover:text-[var(--primary)] transition-colors">Auto</Link>
                 <span className="text-gray-300">/</span>

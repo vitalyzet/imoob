@@ -178,7 +178,7 @@ export default function OverviewPage() {
                 <User size={24} className="text-gray-600" />
               </div>
               <h3 className="text-xl font-bold mb-2 text-gray-900">Setări Profil</h3>
-              <p className="text-gray-500 text-sm max-w-[80%]">Actualizează-ți datele de contact, parola și preferințele contului tău Xmobe.</p>
+              <p className="text-gray-500 text-sm max-w-[80%]">Actualizează-ți datele de contact, parola și preferințele contului tău Vindu24.</p>
             </div>
             <div className="mt-8 flex items-center gap-2 text-gray-600 font-bold text-sm group-hover:gap-3 transition-all">
               Gestionează contul <ArrowRight size={16} />

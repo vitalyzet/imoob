@@ -140,7 +140,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!property) return { title: 'Proprietate negăsită' };
  
   return {
-    title: property.title + ' | Xmobe',
+    title: property.title + ' | Vindu24',
     description: property.description,
   };
 }
@@ -258,7 +258,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
         {/* Breadcrumbs & Top Actions */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 font-medium">
-            <Link href="/" className="hover:text-[#139E69] transition-colors">xmobe</Link>
+            <Link href="/" className="hover:text-[#139E69] transition-colors">vindu24</Link>
             <ChevronRight size={14} className="text-gray-300" />
             <Link href="/propiedades" className="hover:text-[#139E69] transition-colors">Proprietăți</Link>
             <ChevronRight size={14} className="text-gray-300" />
@@ -717,7 +717,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                               {/* Floating Elegant Tooltip */}
                               <div className="absolute bottom-full left-0 mb-3 w-56 p-3 bg-gray-900/95 backdrop-blur-xl text-white text-[11px] font-medium leading-normal rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible group-hover/tooltip:translate-y-[-4px] transition-all duration-300 pointer-events-none z-[100] normal-case tracking-normal border border-white/10">
                                 <p className="relative z-10">
-                                  Recomandare <span className="text-[#f25c1a] font-bold">Xmobe</span>. Imobil de la un utilizator extern.
+                                  Recomandare <span className="text-[#f25c1a] font-bold">Vindu24</span>. Imobil de la un utilizator extern.
                                 </p>
                                 {/* Glow effect inside tooltip */}
                                 <div className="absolute top-0 right-0 w-12 h-12 bg-[#f25c1a]/10 blur-xl rounded-full"></div>

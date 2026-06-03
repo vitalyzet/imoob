@@ -22,7 +22,7 @@ export function useSavedSearches() {
 
   // Load from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('xmobe_saved_searches');
+    const saved = localStorage.getItem('vindu24_saved_searches');
     if (saved) {
       try {
         setSavedSearches(JSON.parse(saved));
@@ -47,14 +47,14 @@ export function useSavedSearches() {
 
     const updated = [newSearch, ...savedSearches].slice(0, 20); // Limit to 20
     setSavedSearches(updated);
-    localStorage.setItem('xmobe_saved_searches', JSON.stringify(updated));
+    localStorage.setItem('vindu24_saved_searches', JSON.stringify(updated));
     return newSearch;
   };
 
   const deleteSearch = (id: string) => {
     const updated = savedSearches.filter(s => s.id !== id);
     setSavedSearches(updated);
-    localStorage.setItem('xmobe_saved_searches', JSON.stringify(updated));
+    localStorage.setItem('vindu24_saved_searches', JSON.stringify(updated));
   };
 
   return { savedSearches, saveSearch, deleteSearch };
