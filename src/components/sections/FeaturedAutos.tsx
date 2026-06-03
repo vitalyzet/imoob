@@ -7,12 +7,25 @@ import AutoCard from '../properties/AutoCard';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
+// Global in-memory cache to prevent reloading when navigating back
+const cache = {
+  data: null as any[] | null,
+  timestamp: 0
+};
+
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
 export default function FeaturedAutos() {
-  const [autos, setAutos] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [autos, setAutos] = useState<any[]>(cache.data || []);
+  const [loading, setLoading] = useState(!cache.data);
 
   useEffect(() => {
-    const fetchAutos = async () => {
+    const fetchFeatured = async () => {
+      // If we have valid cache, skip fetching
+      if (cache.data && (Date.now() - cache.timestamp) < CACHE_DURATION_MS) {
+        return;
+      }
+
       try {
         const q = query(
           collection(db, 'anuncios_auto'),
@@ -31,34 +44,45 @@ export default function FeaturedAutos() {
           return false;
         };
 
-        const data = snapshot.docs.filter(doc => !isAdExpired(doc.data())).map(doc => {
-          const d = doc.data();
+        const mapped = snapshot.docs.filter(doc => !isAdExpired(doc.data())).map(doc => {
+          const data = doc.data();
           return {
             id: doc.id,
-            slug: d.slug || '',
-            title: `${d.marca || ''} ${d.model || ''}`.trim() || 'Vehicul',
-            price: Number(d.price) || 0,
-            oldPrice: d.oldPrice ? Number(d.oldPrice) : null,
-            pretNegociabil: d.pretNegociabil || false,
-            year: d.an || '',
-            mileage: d.rulaj ? Number(d.rulaj).toLocaleString('ro-RO') : '—',
-            fuel: d.combustibil || '',
-            transmission: d.transmisie || d.cutie || '',
-            location: d.city || d.location || '',
-            image: d.images?.[0] || '',
-            promoType: d.promoType || (d.isPromoted ? 'standard' : null),
-            createdAt: d.createdAt || null,
+            slug: data.slug || doc.id,
+            title: `${data.marca} ${data.model}`,
+            price: Number(data.price) || 0,
+            oldPrice: data.oldPrice ? Number(data.oldPrice) : null,
+            pretNegociabil: data.pretNegociabil || false,
+            year: data.an || '',
+            mileage: data.rulaj ? Number(data.rulaj).toLocaleString('ro-RO') : '—',
+            fuel: data.combustibil || '',
+            transmission: data.transmisie || data.cutie || '',
+            location: data.city || '',
+            image: data.images?.[0] || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000',
+            promoType: data.promoType || (data.isPromoted ? 'standard' : null),
+            createdAt: data.createdAt?.toDate() || new Date(),
           };
         });
-        setAutos(data);
-      } catch (err) {
-        console.error('Error fetching active autos:', err);
+
+        // Get Gold/Premium first
+        const promoted = mapped.filter(p => p.promoType === 'gold');
+        const regular = mapped.filter(p => p.promoType !== 'gold').sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+        
+        const finalCars = [...promoted, ...regular].slice(0, 8);
+
+        // Save to cache
+        cache.data = finalCars;
+        cache.timestamp = Date.now();
+
+        setAutos(finalCars);
+      } catch (error) {
+        console.error("Error fetching featured autos:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAutos();
+    fetchFeatured();
   }, []);
 
   // Don't render section if no active auto ads

@@ -8,12 +8,25 @@ import Link from 'next/link';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Global in-memory cache to prevent reloading when navigating back
+const cache = {
+  data: null as any[] | null,
+  timestamp: 0
+};
+
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+
 export default function FeaturedProperties() {
-  const [featured, setFeatured] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [featured, setFeatured] = useState<any[]>(cache.data || []);
+  const [loading, setLoading] = useState(!cache.data);
 
   useEffect(() => {
     const fetchFeatured = async () => {
+      // If we have valid cache, skip fetching
+      if (cache.data && (Date.now() - cache.timestamp) < CACHE_DURATION_MS) {
+        return;
+      }
+      
       try {
         const q = query(collection(db, 'anuncios'), where('status', '==', 'active'), limit(20));
         const snap = await getDocs(q);
@@ -63,6 +76,10 @@ export default function FeaturedProperties() {
         } else {
           featuredAds = featuredAds.slice(0, 8);
         }
+        
+        // Save to cache
+        cache.data = featuredAds;
+        cache.timestamp = Date.now();
         
         setFeatured(featuredAds);
       } catch (e) {
