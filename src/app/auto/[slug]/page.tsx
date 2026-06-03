@@ -59,8 +59,9 @@ export default function AutoDetailsPage() {
           }
           
           setAuto(autoData);
+          setLoading(false); // <--- UNBLOCK UI IMMEDIATELY
           
-          // Fetch similar cars
+          // Fetch similar cars in background
           try {
             // First priority: same brand
             let simQ = query(
@@ -102,11 +103,11 @@ export default function AutoDetailsPage() {
           }
         } else {
           setError(true);
+          setLoading(false);
         }
       } catch (err) {
         console.error('Error fetching auto:', err);
         setError(true);
-      } finally {
         setLoading(false);
       }
     };

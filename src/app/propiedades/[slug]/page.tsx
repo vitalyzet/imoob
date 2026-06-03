@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { MapPin, Bed, Box, ShowerHead, UtensilsCrossed, Dumbbell, Bus, ShoppingBag, GraduationCap, Stethoscope, Utensils, Landmark, ParkingSquare, Building2, Bath, Square, Calendar, Check, Heart, Share2, Printer, ChevronRight, Layers3, Bell, Crown, Info, CheckCircle2, Sun, Phone, MessageCircle, Users, Home, Snowflake, Key, Dog, Zap, Eye, Flag, Star } from 'lucide-react';
 import Link from 'next/link';
 import PropertyGallery from '@/components/properties/PropertyGallery';
@@ -165,7 +165,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     const sq = query(
       collection(db, 'anuncios'), 
       where('email', '==', property.agent.email),
-      where('status', '==', 'active')
+      where('status', '==', 'active'),
+      limit(5)
     );
     const sSnap = await getDocs(sq);
     const sellerProperties = sSnap.docs
@@ -193,7 +194,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       collection(db, 'anuncios'),
       where('promoType', '==', 'gold'),
       where('city', '==', property.location.city),
-      where('status', '==', 'active')
+      where('status', '==', 'active'),
+      limit(5)
     );
     let gSnap = await getDocs(localGQ);
     let sponsoredMatches = gSnap.docs.filter(doc => doc.id !== property.id && doc.data().email !== property.agent.email);
@@ -203,7 +205,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
       const globalGQ = query(
         collection(db, 'anuncios'),
         where('promoType', '==', 'gold'),
-        where('status', '==', 'active')
+        where('status', '==', 'active'),
+        limit(5)
       );
       gSnap = await getDocs(globalGQ);
       sponsoredMatches = gSnap.docs.filter(doc => doc.id !== property.id && doc.data().email !== property.agent.email);
