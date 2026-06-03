@@ -38,18 +38,20 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
         xmlns="http://www.w3.org/2000/svg" 
         style={{ display: 'block' }}
       >
-        <text 
-          x="0" 
-          y="32" 
-          fontFamily="system-ui, -apple-system, sans-serif" 
-          fontWeight="800" 
-          fontSize="36" 
-          letterSpacing="-1.5"
-        >
-          {/* El nombre "Vindu" cambia a blanco en fondos oscuros (dark=true), si no, gris oscuro */}
-          <tspan fill={dark ? "#ffffff" : "#1e293b"}>Vindu</tspan>
-          {/* El "24" siempre se queda en tu color verde corporativo */}
-          <tspan fill="#139E69">24</tspan>
+        <style>
+          {`
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@1,700&display=swap');
+            .logo-v { font-family: 'Playfair Display', serif; font-style: italic; font-size: 42px; }
+            .logo-text { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; }
+          `}
+        </style>
+        <text y="32">
+          {/* 'V' elegante y clásica */}
+          <tspan className="logo-v" fill={dark ? "#ffffff" : "#1e293b"}>V</tspan>
+          {/* 'indu' moderno y geométrico */}
+          <tspan className="logo-text" fill={dark ? "#ffffff" : "#1e293b"}>indu</tspan>
+          {/* '24' en verde corporativo */}
+          <tspan className="logo-text" fill="#139E69">24</tspan>
         </text>
       </svg>
     </div>
