@@ -446,28 +446,38 @@ export default function Navbar() {
             <Logo size="md" dark={textColor === 'text-white'} />
           </Link>
           
-          {/* Domain Switcher */}
-          <div className="hidden md:flex bg-gray-100 p-1 rounded-full relative items-center cursor-pointer shadow-inner border border-gray-200/60">
+          {/* Domain Switcher Premium */}
+          <div className="hidden md:flex bg-gray-100/70 backdrop-blur-lg p-1.5 rounded-full relative items-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-gray-200/50">
+            {/* Animación elástica del indicador */}
             <div
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-out ${
-                domain === 'imobiliare' ? 'left-1' : 'left-[calc(50%+3px)]'
+              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-[0_3px_12px_-2px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.05)] border border-gray-100/80 transition-all duration-500 ${
+                domain === 'imobiliare' ? 'left-1.5' : 'left-[calc(50%+4px)]'
               }`}
+              style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
             />
+            
             <button
               onClick={() => handleDomainChange('imobiliare')}
-              className={`relative z-10 flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-black transition-colors ${
-                domain === 'imobiliare' ? 'text-[var(--primary)]' : 'text-gray-400 hover:text-gray-600'
+              className={`relative z-10 flex items-center justify-center gap-2 px-6 py-2.5 text-[12px] font-black tracking-[1px] transition-all duration-300 ${
+                domain === 'imobiliare' 
+                  ? 'text-slate-800' 
+                  : 'text-gray-400/80 hover:text-gray-500'
               }`}
             >
-              <Building2 size={14} /> IMOBILIARE
+              <Building2 size={16} strokeWidth={domain === 'imobiliare' ? 2.5 : 2} className={domain === 'imobiliare' ? 'text-[var(--primary)]' : ''} /> 
+              IMOBILIARE
             </button>
+            
             <button
               onClick={() => handleDomainChange('auto')}
-              className={`relative z-10 flex items-center gap-1.5 px-4 py-1.5 text-[13px] font-black transition-colors ${
-                domain === 'auto' ? 'text-[var(--primary)]' : 'text-gray-400 hover:text-gray-600'
+              className={`relative z-10 flex items-center justify-center gap-2 px-6 py-2.5 text-[12px] font-black tracking-[1px] transition-all duration-300 ${
+                domain === 'auto' 
+                  ? 'text-slate-800' 
+                  : 'text-gray-400/80 hover:text-gray-500'
               }`}
             >
-              <Car size={14} /> AUTO
+              <Car size={16} strokeWidth={domain === 'auto' ? 2.5 : 2} className={domain === 'auto' ? 'text-[#0ea5e9]' : ''} /> 
+              AUTO
             </button>
           </div>
         </div>
