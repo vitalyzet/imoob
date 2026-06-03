@@ -40,18 +40,15 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       >
         <style>
           {`
-            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@800&family=Playfair+Display:ital,wght@1,700&display=swap');
-            .logo-v { font-family: 'Playfair Display', serif; font-style: italic; font-size: 42px; }
-            .logo-text { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; }
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap');
+            .logo-text { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.5px; }
           `}
         </style>
-        <text y="32">
-          {/* 'V' elegante y clásica */}
-          <tspan className="logo-v" fill={dark ? "#ffffff" : "#1e293b"}>V</tspan>
-          {/* 'indu' moderno y geométrico */}
-          <tspan className="logo-text" fill={dark ? "#ffffff" : "#1e293b"}>indu</tspan>
-          {/* '24' en verde corporativo */}
-          <tspan className="logo-text" fill="#139E69">24</tspan>
+        <text y="33">
+          {/* 'Vindu' en Gris muy oscuro elegante (o blanco si el fondo es oscuro) */}
+          <tspan className="logo-text" fill={dark ? "#ffffff" : "#1e293b"}>Vindu</tspan>
+          {/* '24' en el Azul Cielo de la sección Auto */}
+          <tspan className="logo-text" fill="#0ea5e9">24</tspan>
         </text>
       </svg>
     </div>
