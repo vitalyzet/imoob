@@ -4,6 +4,7 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
+import { compressImage } from '@/lib/imageCompression';
 import { ROMANIA_LOCATIONS as LOCATIONS_DATA } from '@/constants/romaniaCities';
 import { collection, addDoc, serverTimestamp, doc, getDoc, updateDoc, arrayUnion, increment } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
@@ -362,21 +363,22 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
     }
     setIsUploading(true);
     const newUrls: string[] = [];
-    await Promise.all(Array.from(files).map(async (file) => {
-      try {
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ filename: file.name, contentType: file.type })
-        });
-        const data = await res.json();
-        if (data.uploadUrl) {
-          const uploadRes = await fetch(data.uploadUrl, {
-            method: 'PUT', headers: { 'Content-Type': file.type }, body: file
-          });
-          if (uploadRes.ok) newUrls.push(data.finalUrl);
-        }
-      } catch (err) { console.error(err); }
+    await Promise.all(Array.from(files).map(async (rawFile) => {
+        try {
+            const file = await compressImage(rawFile);
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: file.name, contentType: file.type })
+            });
+            const data = await res.json();
+            if (data.uploadUrl) {
+                const uploadRes = await fetch(data.uploadUrl, {
+                    method: 'PUT', headers: { 'Content-Type': file.type }, body: file
+                });
+                if (uploadRes.ok) newUrls.push(data.finalUrl);
+            }
+        } catch (err) { console.error(err); }
     }));
     updateField('images', [...formData.images, ...newUrls]);
     setIsUploading(false);

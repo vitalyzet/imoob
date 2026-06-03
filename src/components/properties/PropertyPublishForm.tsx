@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, arrayUnion, getDoc } from 'firebase/firestore';
+import { compressImage } from '@/lib/imageCompression';
 import { useAuth } from '@/context/AuthContext';
 import Logo from '@/components/layout/Logo';
 
@@ -246,8 +247,9 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
 
     const newImageUrls: string[] = [];
 
-    await Promise.all(Array.from(files).map(async (file) => {
+    await Promise.all(Array.from(files).map(async (rawFile) => {
         try {
+            const file = await compressImage(rawFile);
             const res = await fetch('/api/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
