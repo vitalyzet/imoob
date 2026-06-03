@@ -54,9 +54,6 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
           {/* '24' fino en azul */}
           <tspan className="logo-24" fill={dark ? "#60a5fa" : "#0ea5e9"}>24</tspan>
         </text>
-
-        {/* Punto final elegante */}
-        <circle cx="140" cy="30" r="3.5" fill={dark ? "#60a5fa" : "#0ea5e9"} />
       </svg>
     </div>
   );
