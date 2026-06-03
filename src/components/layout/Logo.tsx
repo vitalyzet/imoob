@@ -3,24 +3,20 @@ import React from 'react';
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'custom';
-  dark?: boolean; // si es true, aplica un filtro para hacer el logo blanco en fondos oscuros
+  dark?: boolean; // si es true, la primera parte del texto se pone blanca
 }
 
 export default function Logo({ className = '', size = 'md', dark = false }: LogoProps) {
-  // Ajustamos los tamaños para que el logo se vea un poco más pequeño, compacto y elegante
-  // Mantenemos la relación de aspecto perfecta de ~4.11:1.
+  // Ajustamos los tamaños manteniendo la proporción del nuevo texto
   const dimensions = {
-    sm: { width: 82, height: 20 },
-    md: { width: 115, height: 28 }, // El logotipo ahora es más compacto (altura baja de 32px a 28px)
-    lg: { width: 164, height: 40 },
-    xl: { width: 246, height: 60 },
-    custom: { width: 115, height: 28 },
+    sm: { width: 95, height: 24 },
+    md: { width: 130, height: 32 }, 
+    lg: { width: 180, height: 44 },
+    xl: { width: 280, height: 70 },
+    custom: { width: 130, height: 32 },
   };
 
   const { width, height } = dimensions[size === 'custom' ? 'md' : size];
-
-  // Si dark es true, invertimos la imagen a blanco puro para fondos oscuros.
-  const filterStyle = dark ? { filter: 'brightness(0) invert(1)' } : undefined;
 
   return (
     <div 
@@ -28,23 +24,34 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       style={{ 
         width: `${width}px`, 
         height: `${height}px`, 
-        overflow: 'hidden',
+        overflow: 'visible',
         display: 'inline-flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}
     >
-      <img 
-        src="/xmobe.png" 
-        alt="Xmobe Logo" 
-        style={{
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          display: 'block',
-          ...filterStyle
-        }}
-      />
+      <svg 
+        width="100%" 
+        height="100%" 
+        viewBox="0 0 160 40" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg" 
+        style={{ display: 'block' }}
+      >
+        <text 
+          x="0" 
+          y="32" 
+          fontFamily="system-ui, -apple-system, sans-serif" 
+          fontWeight="800" 
+          fontSize="36" 
+          letterSpacing="-1.5"
+        >
+          {/* El nombre "Vindu" cambia a blanco en fondos oscuros (dark=true), si no, gris oscuro */}
+          <tspan fill={dark ? "#ffffff" : "#1e293b"}>Vindu</tspan>
+          {/* El "24" siempre se queda en tu color verde corporativo */}
+          <tspan fill="#139E69">24</tspan>
+        </text>
+      </svg>
     </div>
   );
 }
