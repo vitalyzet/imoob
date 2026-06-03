@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword } from 'firebase/auth';
 import { ROMANIA_LOCATIONS as LOCATIONS_DATA } from '@/constants/romaniaCities';
 import React from 'react';
 
@@ -181,6 +182,49 @@ export default function SettingsPage() {
   });
 
   const [logo, setLogo] = useState<string | null>(null);
+
+  const [passwords, setPasswords] = useState({ current: '', new: '' });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
+
+  const handlePasswordChange = async () => {
+    setPasswordError('');
+    setPasswordSuccess(false);
+    
+    if (!passwords.current || !passwords.new) {
+      setPasswordError('Te rugăm să completezi ambele câmpuri.');
+      return;
+    }
+    
+    if (passwords.new.length < 6) {
+      setPasswordError('Parola nouă trebuie să aibă cel puțin 6 caractere.');
+      return;
+    }
+    
+    if (!user || !user.email) return;
+    
+    setIsChangingPassword(true);
+    try {
+      const credential = EmailAuthProvider.credential(user.email, passwords.current);
+      await reauthenticateWithCredential(user, credential);
+      
+      await updatePassword(user, passwords.new);
+      
+      setPasswordSuccess(true);
+      setPasswords({ current: '', new: '' });
+      setTimeout(() => setPasswordSuccess(false), 3000);
+    } catch (err: any) {
+      console.error(err);
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        setPasswordError('Parola curentă este incorectă.');
+      } else {
+        setPasswordError('Eroare: ' + err.message);
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   // Load logo and user profile details
   useEffect(() => {
@@ -363,8 +407,34 @@ export default function SettingsPage() {
             Securitate Cont
           </h3>
           <div className="flex flex-col gap-6">
-            <InputField label="Parolă Curentă" type="password" icon={Shield} placeholder="••••••••" />
-            <InputField label="Parolă Nouă" type="password" icon={Shield} placeholder="Introduceți noua parolă" />
+            <InputField 
+              label="Parolă Curentă" 
+              type="password" 
+              icon={Shield} 
+              placeholder="••••••••" 
+              value={passwords.current}
+              onChange={(e: any) => setPasswords({...passwords, current: e.target.value})}
+            />
+            <InputField 
+              label="Parolă Nouă" 
+              type="password" 
+              icon={Shield} 
+              placeholder="Introduceți noua parolă" 
+              value={passwords.new}
+              onChange={(e: any) => setPasswords({...passwords, new: e.target.value})}
+            />
+            
+            {passwordError && <div className="text-red-500 text-[13px] font-bold">{passwordError}</div>}
+            {passwordSuccess && <div className="text-[#139E69] text-[13px] font-bold">Parola a fost schimbată cu succes!</div>}
+            
+            <button 
+              onClick={handlePasswordChange}
+              disabled={isChangingPassword || !passwords.current || !passwords.new}
+              className="mt-2 w-fit bg-gray-900 hover:bg-black text-white px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl shadow-black/10 active:scale-95 flex items-center gap-2 disabled:opacity-50"
+            >
+              {isChangingPassword ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+              Schimbă Parola
+            </button>
             
             <div className="mt-4 p-6 bg-blue-50/50 rounded-[30px] border border-blue-100/50 flex items-start gap-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm">
