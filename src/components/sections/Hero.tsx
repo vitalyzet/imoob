@@ -8,7 +8,7 @@ import ClassicAutoSearch from './ClassicAutoSearch';
 import { useRouter } from 'next/navigation';
 import { Search, Heart, Building2, Building, Home, Map, Briefcase, Store, Factory, Hotel, MapPin, Bed, ChevronDown, Check, Warehouse, Car } from 'lucide-react';
 import { ROMANIA_LOCATIONS } from '@/constants/romaniaCities';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export default function Hero() {
@@ -79,7 +79,7 @@ export default function Hero() {
 
   useEffect(() => {
     // Set up real-time listener for counting active ads
-    const q = query(collection(db, 'anuncios'), where('status', '==', 'active'));
+    const q = query(collection(db, 'anuncios'), where('status', '==', 'active'), limit(100));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const mapped = snapshot.docs.map(doc => doc.data());

@@ -17,7 +17,7 @@ export default function FeaturedAutos() {
         const q = query(
           collection(db, 'anuncios_auto'),
           where('status', '==', 'active'),
-          limit(8)
+          limit(20)
         );
         const snapshot = await getDocs(q);
         const isAdExpired = (d: any) => {

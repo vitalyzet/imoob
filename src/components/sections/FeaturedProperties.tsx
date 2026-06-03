@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import PropertyCard from '@/components/properties/PropertyCard';
 import Link from 'next/link';
@@ -15,7 +15,7 @@ export default function FeaturedProperties() {
   useEffect(() => {
     const fetchFeatured = async () => {
       try {
-        const q = query(collection(db, 'anuncios'), where('status', '==', 'active'));
+        const q = query(collection(db, 'anuncios'), where('status', '==', 'active'), limit(20));
         const snap = await getDocs(q);
         const isAdExpired = (d: any) => {
           if (d.status === 'expired' || d.status === 'inactive') return true;
