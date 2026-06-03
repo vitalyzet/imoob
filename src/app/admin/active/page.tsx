@@ -170,7 +170,7 @@ export default function ActiveAdsPage() {
                 }`}
               >
                 {/* Image */}
-                <div className="relative w-full sm:w-[180px] h-36 sm:h-auto flex-shrink-0">
+                <div className="relative w-full sm:w-[200px] h-[200px] sm:h-[130px] flex-shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={ad.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=400&h=300&q=80'}
