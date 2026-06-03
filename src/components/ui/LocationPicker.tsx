@@ -107,7 +107,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
         const map = new google.maps.Map(mapRef.current, {
           center: initialCenter,
           zoom: initialZoom,
-          mapId: 'IMOOB_LOCATION_PICKER',
+          mapId: 'XMOBE_LOCATION_PICKER',
           disableDefaultUI: true,
           zoomControl: true,
           gestureHandling: 'cooperative',

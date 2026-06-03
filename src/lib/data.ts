@@ -7,7 +7,7 @@ export const agents: Agent[] = [
     role: 'Director Comercial',
     image: '/images/team/carlos.jpg',
     phone: '+34 612 345 678',
-    email: 'carlos@imoob.com',
+    email: 'carlos@xmobe.com',
   },
   {
     id: '2',
@@ -15,7 +15,7 @@ export const agents: Agent[] = [
     role: 'Agente Senior',
     image: '/images/team/maria.jpg',
     phone: '+34 623 456 789',
-    email: 'maria@imoob.com',
+    email: 'maria@xmobe.com',
   },
   {
     id: '3',
@@ -23,7 +23,7 @@ export const agents: Agent[] = [
     role: 'Asesor Inmobiliario',
     image: '/images/team/alejandro.jpg',
     phone: '+34 634 567 890',
-    email: 'alejandro@imoob.com',
+    email: 'alejandro@xmobe.com',
   },
   {
     id: '4',
@@ -31,7 +31,7 @@ export const agents: Agent[] = [
     role: 'Directora de Marketing',
     image: '/images/team/laura.jpg',
     phone: '+34 645 678 901',
-    email: 'laura@imoob.com',
+    email: 'laura@xmobe.com',
   },
 ];
 

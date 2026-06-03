@@ -1,14 +1,65 @@
 'use client';
 
-import { User, Mail, Phone, Shield, Bell, Globe, Trash2, Camera, Save, CheckCircle2, AlertCircle, ChevronRight, Loader2 } from 'lucide-react';
+import { User, Mail, Phone, Shield, Bell, Globe, Trash2, Camera, Save, CheckCircle2, AlertCircle, ChevronRight, Loader2, ChevronDown, MapPin, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { ROMANIA_LOCATIONS as LOCATIONS_DATA } from '@/constants/romaniaCities';
+import React from 'react';
 
-const InputField = ({ label, type = "text", placeholder, icon: Icon, value, onChange }: any) => (
+const ROMANIA_LOCATIONS = LOCATIONS_DATA.map(l => `${l.name}, ${l.county}`);
+
+// Known Romanian cities (orașe) — these get colored icons
+const CITIES = new Set([
+  'București','Sector 1','Sector 2','Sector 3','Sector 4','Sector 5','Sector 6',
+  'Alba Iulia','Sebeș','Aiud','Cugir','Blaj','Arad','Lipova','Ineu',
+  'Pitești','Mioveni','Câmpulung','Curtea de Argeș','Bacău','Onești','Moinești','Comănești',
+  'Oradea','Salonta','Marghita','Beiuș','Bistrița','Beclean','Năsăud',
+  'Botoșani','Dorohoi','Brașov','Făgăraș','Săcele','Codlea','Zărnești','Râșnov','Predeal',
+  'Brăila','Buzău','Râmnicu Sărat','Reșița','Caransebeș',
+  'Călărași','Oltenița','Cluj-Napoca','Turda','Dej','Gherla',
+  'Constanța','Medgidia','Mangalia','Năvodari','Cernavodă','Eforie',
+  'Sfântu Gheorghe','Târgu Secuiesc','Târgoviște','Moreni',
+  'Craiova','Băilești','Calafat','Galați','Tecuci','Giurgiu',
+  'Târgu Jiu','Motru','Miercurea Ciuc','Odorheiu Secuiesc','Gheorgheni','Toplița',
+  'Deva','Hunedoara','Petroșani','Lupeni','Vulcan','Orăștie','Brad',
+  'Slobozia','Fetești','Urziceni','Iași','Pașcani',
+  'Voluntari','Pantelimon','Buftea','Popești-Leordeni','Bragadiru','Otopeni',
+  'Baia Mare','Sighetu Marmației','Borșa','Drobeta-Turnu Severin','Orșova',
+  'Târgu Mureș','Reghin','Sighișoara','Târnăveni',
+  'Piatra Neamț','Roman','Slatina','Caracal','Balș','Corabia',
+  'Ploiești','Câmpina','Sinaia','Bușteni','Azuga','Breaza','Vălenii de Munte',
+  'Satu Mare','Carei','Zalău','Sibiu','Mediaș','Cisnădie',
+  'Suceava','Fălticeni','Rădăuți','Câmpulung Moldovenesc','Vatra Dornei','Gura Humorului',
+  'Alexandria','Roșiorii de Vede','Turnu Măgurele',
+  'Timișoara','Lugoj','Tulcea','Vaslui','Bârlad','Huși',
+  'Râmnicu Vâlcea','Drăgășani','Focșani','Adjud'
+]);
+
+const normalize = (s: string) => {
+  if (!s) return '';
+  return s.normalize("NFD").replace(/[\u0300-\u036f\u0327\u0328]/g, "").toLowerCase();
+};
+
+const fuzzyMatch = (str: string, pattern: string) => {
+  if (!pattern) return true;
+  str = normalize(str);
+  pattern = normalize(pattern);
+  let i = 0, j = 0;
+  while (i < str.length && j < pattern.length) {
+    if (str[i] === pattern[j]) j++;
+    i++;
+  }
+  return j === pattern.length;
+};
+
+const InputField = ({ label, type = "text", placeholder, icon: Icon, value, onChange, action }: any) => (
   <div className="flex flex-col gap-2 w-full text-left">
-    <label className="text-[11px] font-black text-gray-400 uppercase tracking-[2px] ml-1">{label}</label>
+    <div className="flex items-center justify-between ml-1 pr-2">
+      <label className="text-[11px] font-black text-gray-400 uppercase tracking-[2px]">{label}</label>
+      {action && action}
+    </div>
     <div className="relative group">
       <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f25c1a] transition-colors">
         <Icon size={18} strokeWidth={2} />
@@ -23,6 +74,83 @@ const InputField = ({ label, type = "text", placeholder, icon: Icon, value, onCh
     </div>
   </div>
 );
+
+const LocationDropdown = ({ value, onChange, icon: Icon }: any) => {
+  const [citySearch, setCitySearch] = useState('');
+  const [cityDropdownOpen, setCityDropdownOpen] = useState(false);
+  const cityRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setCityDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  return (
+    <div className="flex flex-col gap-2 w-full text-left" ref={cityRef}>
+      <label className="text-[11px] font-black text-gray-400 uppercase tracking-[2px] ml-1">Locație</label>
+      <div className="relative group">
+        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#f25c1a] transition-colors">
+          <Icon size={18} strokeWidth={2} />
+        </div>
+        <form autoComplete="off" onSubmit={(e) => e.preventDefault()} className="w-full m-0 p-0 relative">
+          <input 
+            type="search" 
+            name="isolated_location_search"
+            autoComplete="new-password"
+            autoCorrect="off"
+            spellCheck="false"
+            value={cityDropdownOpen ? citySearch : (value || citySearch)}
+            onFocus={() => { setCityDropdownOpen(true); setCitySearch(''); }}
+            onChange={(e) => { setCitySearch(e.target.value); setCityDropdownOpen(true); }}
+            placeholder="Introduceți localitatea"
+            className="w-full bg-gray-50 border-2 border-transparent focus:border-orange-500/20 focus:bg-white px-14 py-4 rounded-[22px] text-[15px] font-bold text-gray-800 transition-all outline-none placeholder:text-gray-300"
+          />
+          <ChevronDown size={16} className={`absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 transition-transform pointer-events-none ${cityDropdownOpen ? 'rotate-180' : ''}`} />
+        </form>
+        
+        {cityDropdownOpen && (
+          <div className="absolute top-full left-0 mt-2 z-50 w-full bg-white border border-gray-100 rounded-2xl shadow-xl max-h-[260px] overflow-y-auto scrollbar-hide py-2">
+            {(() => {
+              const q = normalize(citySearch);
+              const filtered = ROMANIA_LOCATIONS.filter(c => fuzzyMatch(c, citySearch))
+                .sort((a, b) => {
+                  const aN = normalize(a.split(', ')[0]);
+                  const bN = normalize(b.split(', ')[0]);
+                  const aExact = aN.includes(q) ? (aN.startsWith(q) ? 0 : 1) : 2;
+                  const bExact = bN.includes(q) ? (bN.startsWith(q) ? 0 : 1) : 2;
+                  return aExact - bExact;
+                })
+                .slice(0, 50);
+              if (filtered.length === 0) return (
+                <div className="px-4 py-6 text-center text-[13px] text-gray-400 font-medium">Niciun rezultat găsit</div>
+              );
+              return filtered.map(c => {
+                const [name, county] = c.split(', ');
+                return (
+                  <button key={c} type="button"
+                    onClick={() => { onChange(c); setCitySearch(c); setCityDropdownOpen(false); }}
+                    className={`w-full text-left px-5 py-3 text-[14px] hover:bg-orange-50 transition-colors flex items-center gap-3 ${
+                      value === c ? 'bg-orange-50 text-[#f25c1a]' : 'text-gray-700'
+                    }`}>
+                    <MapPin size={16} className={`shrink-0 ${CITIES.has(name) ? 'text-[#f25c1a]' : 'text-gray-300'}`} />
+                    <span className="font-bold">{name}</span>
+                    <span className="text-[12px] text-gray-400 font-medium">{county}</span>
+                    {value === c && <CheckCircle2 size={14} className="ml-auto text-[#f25c1a]" />}
+                  </button>
+                );
+              });
+            })()}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const Toggle = ({ active, onClick }: { active: boolean, onClick: () => void }) => (
   <button 
@@ -56,7 +184,7 @@ export default function SettingsPage() {
 
   // Load logo and user profile details
   useEffect(() => {
-    const savedLogo = localStorage.getItem('imoob_user_logo');
+    const savedLogo = localStorage.getItem('xmobe_user_logo');
     if (savedLogo) setLogo(savedLogo);
 
     if (user) {
@@ -98,7 +226,7 @@ export default function SettingsPage() {
       reader.onloadend = () => {
         const base64 = reader.result as string;
         setLogo(base64);
-        localStorage.setItem('imoob_user_logo', base64);
+        localStorage.setItem('xmobe_user_logo', base64);
         // Trigger a custom event so other components know the logo changed
         window.dispatchEvent(new CustomEvent('user-logo-changed', { detail: base64 }));
       };
@@ -112,8 +240,19 @@ export default function SettingsPage() {
       const userRef = doc(db, 'users', user.uid);
       const userSnap = await getDoc(userRef);
       
+      let formattedName = profile.name || '';
+      if (formattedName) {
+        const parts = formattedName.trim().split(' ');
+        if (parts.length > 1) {
+          const lastName = parts.pop();
+          if (lastName) {
+            formattedName = `${parts.join(' ')} ${lastName[0].toUpperCase()}.`;
+          }
+        }
+      }
+
       const payload: any = {
-        name: profile.name,
+        name: formattedName,
         email: profile.email,
         phone: profile.phone,
         location: profile.location
@@ -124,6 +263,9 @@ export default function SettingsPage() {
       }
       
       await setDoc(userRef, payload, { merge: true });
+      import('firebase/auth').then(({ updateProfile }) => {
+        updateProfile(user, { displayName: formattedName });
+      }).catch(e => console.error(e));
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
     } catch (err) {
@@ -173,9 +315,31 @@ export default function SettingsPage() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField label="Nume Complet" icon={User} value={profile.name} onChange={(e: any) => setProfile({ ...profile, name: e.target.value })} placeholder="Introduceți numele complet" />
-                  <InputField label="Adresă Email" icon={Mail} value={profile.email} onChange={(e: any) => setProfile({ ...profile, email: e.target.value })} placeholder="Introduceți adresa de email" />
-                  <InputField label="Număr Telefon" icon={Phone} value={profile.phone} onChange={(e: any) => setProfile({ ...profile, phone: e.target.value })} placeholder="Introduceți numărul de telefon" />
-                  <InputField label="Locație" icon={Globe} value={profile.location} onChange={(e: any) => setProfile({ ...profile, location: e.target.value })} placeholder="Introduceți localitatea" />
+                  <InputField 
+                    label="Adresă Email" 
+                    icon={Mail} 
+                    value={profile.email} 
+                    onChange={(e: any) => setProfile({ ...profile, email: e.target.value })} 
+                    placeholder="Introduceți adresa de email" 
+                    action={
+                      <button className="text-[10px] bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1 rounded-full font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 shadow-sm border border-red-100">
+                        <AlertCircle size={12} strokeWidth={3} /> Verifică Email
+                      </button>
+                    }
+                  />
+                  <InputField 
+                    label="Număr Telefon" 
+                    icon={Phone} 
+                    value={profile.phone} 
+                    onChange={(e: any) => setProfile({ ...profile, phone: e.target.value })} 
+                    placeholder="Introduceți numărul de telefon" 
+                    action={
+                      <button className="text-[10px] bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1 rounded-full font-black uppercase tracking-widest transition-colors flex items-center gap-1.5 shadow-sm border border-red-100">
+                        <AlertCircle size={12} strokeWidth={3} /> Verifică Telefon
+                      </button>
+                    }
+                  />
+                  <LocationDropdown icon={Globe} value={profile.location} onChange={(val: string) => setProfile({ ...profile, location: val })} />
                 </div>
                 
                 <button 

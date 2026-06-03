@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useDomain } from '@/context/DomainContext';
+import Logo from '@/components/layout/Logo';
 
 export default function Footer() {
   const pathname = usePathname();
@@ -18,8 +19,9 @@ export default function Footer() {
 
           {/* Columna 1 - Marca */}
           <div className="md:col-span-1">
-            <Link href="/" className="text-2xl font-bold mb-4 inline-block">
-              IMOOB<span className="text-[var(--primary)]">.</span><span className="text-xs text-gray-500">ro</span>
+            <Link href="/" className="flex items-center mb-4 gap-1">
+              <Logo size="md" />
+              <span className="text-xs text-gray-500 font-bold self-end mb-1">.ro</span>
             </Link>
             <p className="text-gray-600 text-sm leading-relaxed mb-6">
               Platformă de anunțuri imobiliare din România. Locul perfect pentru a găsi casa ta de vis. Simplu, sigur și rapid.
@@ -68,7 +70,6 @@ export default function Footer() {
                 <>
                   <li><Link href="/auto?category=autoturisme" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Autoturisme</Link></li>
                   <li><Link href="/auto?category=motociclete" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Motociclete</Link></li>
-                  <li><Link href="/auto?category=autoutilitare" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Autoutilitare</Link></li>
                   <li><Link href="/auto?category=camioane" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Camioane</Link></li>
                   <li><Link href="/auto?category=piese" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Piese Auto</Link></li>
                 </>
@@ -121,9 +122,20 @@ export default function Footer() {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-stone-200 pt-8 text-center">
-          <p className="text-gray-500 text-xs">
-            © {currentYear} IMOOB. Tutti i diritti riservati | În curând disponibil!
+        <div className="border-t border-stone-200 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <button className="flex items-center gap-2 text-[11px] font-black text-gray-500 hover:text-gray-900 transition-colors bg-white px-4 py-2 rounded-full border border-gray-200 shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-md hover:-translate-y-0.5 transform duration-300">
+              <img src="https://flagcdn.com/w20/es.png" alt="Español" className="w-4 h-3 object-cover rounded-[2px]" />
+              ESPAÑOL
+            </button>
+            <button className="flex items-center gap-2 text-[11px] font-black text-[var(--primary)] bg-[var(--primary)]/5 px-4 py-2 rounded-full border border-[var(--primary)]/20 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+              <img src="https://flagcdn.com/w20/ro.png" alt="Română" className="w-4 h-3 object-cover rounded-[2px]" />
+              ROMÂNĂ
+            </button>
+          </div>
+          
+          <p className="text-gray-500 text-xs font-medium">
+            © {currentYear} Xmobe. Toate drepturile rezervate.
           </p>
         </div>
       </div>

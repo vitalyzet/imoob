@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Heart, User, Menu, X, ChevronDown, Bell, Globe, Car, Building2 } from 'lucide-react';
 import { useDomain } from '@/context/DomainContext';
+import Logo from '@/components/layout/Logo';
 
 export default function PremiumHeader() {
   const [scrolled, setScrolled] = useState(false);
@@ -19,7 +20,9 @@ export default function PremiumHeader() {
     
     // If we are not on the home page, redirect to home page so the new domain vertical is displayed
     if (pathname !== '/') {
-      router.push('/');
+      setTimeout(() => {
+        router.push('/');
+      }, 500);
     }
   };
 
@@ -57,12 +60,7 @@ export default function PremiumHeader() {
           
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 bg-[var(--primary)] rounded-xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-300 shadow-lg shadow-emerald-500/20">
-              <span className="text-white font-black text-xl">I</span>
-            </div>
-            <span className={`text-2xl font-black tracking-tighter ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
-              IMOB<span className="text-[var(--primary)]">.</span>
-            </span>
+            <Logo size="md" />
           </Link>
 
           {/* Domain Switcher */}

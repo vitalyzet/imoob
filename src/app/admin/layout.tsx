@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, ShieldAlert, BarChart, Settings, Home, CheckCircle } from 'lucide-react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import Logo from '@/components/layout/Logo';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -42,8 +43,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className="w-64 bg-[#0B1527] border-r border-[#1e293b] flex flex-col fixed h-full z-10 transition-all">
         <div className="h-20 flex items-center px-6 border-b border-[#1e293b]">
-          <Link href="/admin" className="text-2xl font-serif font-black tracking-tighter text-white flex items-center gap-2">
-            IMOOB<span className="text-[#139E69]">.</span> <span className="text-[10px] bg-[#139E69] text-white px-2 py-0.5 rounded-full uppercase tracking-widest ml-1">Admin</span>
+          <Link href="/admin" className="flex items-center gap-2">
+            <Logo size="md" dark={true} />
+            <span className="text-[10px] bg-[#139E69] text-white px-2 py-0.5 rounded-full uppercase tracking-widest ml-1">Admin</span>
           </Link>
         </div>
 

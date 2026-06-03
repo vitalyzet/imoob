@@ -1,9 +1,11 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, Users, Heart, Camera, Tag } from 'lucide-react';
+import Link from 'next/link';
+import { MapPin, Bed, Bath, Square, ChevronLeft, ChevronRight, Users, Heart, Camera, Tag, Sparkles } from 'lucide-react';
 import { Property } from '@/lib/types';
 import { useState, useEffect } from 'react';
+import { useFavorites } from '@/hooks/useFavorites';
 import ContactModal from './ContactModal';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -14,6 +16,7 @@ interface PropertyRowCardProps {
 
 export default function PropertyRowCard({ property }: PropertyRowCardProps) {
   const router = useRouter();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const [logo, setLogo] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -34,7 +37,7 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
   };
 
   useEffect(() => {
-    const savedLogo = localStorage.getItem('imoob_user_logo');
+    const savedLogo = localStorage.getItem('xmobe_user_logo');
     if (savedLogo) setLogo(savedLogo);
 
     const handleLogoChange = (e: CustomEvent) => {
@@ -48,6 +51,22 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
   const formattedNumber = new Intl.NumberFormat('ro-RO', {
     maximumFractionDigits: 0,
   }).format(property.price);
+
+  let isNew = false;
+  if (property.createdAt) {
+    let dateObj;
+    if (typeof property.createdAt === 'object' && 'seconds' in property.createdAt) {
+      dateObj = new Date((property.createdAt as any).seconds * 1000);
+    } else if (typeof property.createdAt === 'number') {
+      dateObj = new Date(property.createdAt);
+    } else {
+      dateObj = new Date(property.createdAt);
+    }
+    
+    if (!isNaN(dateObj.getTime())) {
+      isNew = (Date.now() - dateObj.getTime()) < 2 * 24 * 60 * 60 * 1000;
+    }
+  }
 
   const variants = {
     enter: (direction: number) => ({
@@ -69,24 +88,8 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
   return (
     <div 
       onClick={() => router.push(`/propiedades/${property.slug}`)}
-      className={`group block bg-white rounded-[24px] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.08)] transition-all hover:shadow-xl hover:-translate-y-1 relative border cursor-pointer ${
-        property.promoType === 'gold' 
-          ? 'border-amber-400/50 shadow-[0_10px_35px_-12px_rgba(251,191,36,0.2)]'
-          : property.promoType === 'standard'
-          ? 'border-[#139E69]/20 shadow-sm'
-          : 'border-transparent hover:border-gray-200'
-      }`}
+      className="group block bg-white rounded-[24px] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.08)] transition-all hover:shadow-xl hover:-translate-y-1 relative border cursor-pointer border-transparent hover:border-gray-200"
     >
-      {/* Promotion Ribbon */}
-      {property.promoType && (
-        <div className="absolute top-6 -left-2 z-20">
-          <div className="bg-[#139E69] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[13px]">
-            <Tag size={14} /> Promoción
-          </div>
-          <div className="w-0 h-0 border-t-[6px] border-t-[#0a6c47] border-l-[8px] border-l-transparent absolute top-full left-0"></div>
-        </div>
-      )}
-
       {/* Inner wrapper to handle overflow without cutting outer ribbon */}
       <div className="flex flex-col md:flex-row w-full overflow-hidden rounded-[24px] [transform:translateZ(0)]">
         {/* Image Container */}
@@ -130,10 +133,15 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
           <ChevronRight size={18} strokeWidth={3} />
         </button>
         
-        <div className={`absolute left-4 z-10 flex flex-col gap-1.5 ${property.promoType ? 'top-16' : 'top-4'}`}>
+        <div className="absolute left-4 z-10 flex flex-col gap-1.5 top-4">
           <span className={`px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg border outline outline-4 outline-black/5 ${property.status === 'for-rent' || property.type === 'camera' ? 'bg-[#139E69] text-white border-emerald-400/20' : 'bg-slate-900 text-white border-slate-700/20'}`}>
             {property.type === 'camera' ? 'Cameră de închiriat' : property.status === 'for-rent' ? 'De închiriat' : 'De vânzare'}
           </span>
+          {isNew && (
+            <span className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm w-fit">
+              Nou
+            </span>
+          )}
           {property.oldPrice && property.oldPrice > property.price && (
             <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-3 py-1.5 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/30 rounded-full w-fit flex items-center gap-1.5 backdrop-blur-sm border border-white/20">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M7 7l10 10M17 7v10H7"/></svg>
@@ -143,15 +151,12 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
         </div>
 
         {/* Favorite Button */}
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-4 right-4 z-20">
           <button 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            className="p-2.5 bg-black/20 backdrop-blur-md border border-white/20 rounded-full text-white hover:bg-[#f25c1a] hover:border-[#f25c1a] transition-all duration-300 group/fav"
+            onClick={(e) => toggleFavorite(property.id, e)}
+            className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-full flex items-center justify-center text-slate-700 shadow-sm hover:bg-white hover:text-rose-500 transition-colors group/fav"
           >
-            <Heart size={18} className="transition-transform group-hover/fav:scale-110" />
+            <Heart size={18} fill={isFavorite(property.id) ? "currentColor" : "transparent"} className={`transition-transform group-hover/fav:scale-110 ${isFavorite(property.id) ? "text-rose-500" : ""}`} />
           </button>
         </div>
 
@@ -166,9 +171,20 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
       {/* Content Area */}
       <div className="flex-1 flex flex-col relative bg-white">
         <div className="h-10 bg-slate-100/80 px-5 flex items-center justify-between border-b border-slate-200/50">
-          <span className="text-[12px] font-bold text-slate-600 tracking-tight">
-            {property.agent.name}
-          </span>
+          <Link href={`?agentProfile=${property.agent?.id || 'anonimo'}`} scroll={false} className="flex items-center gap-2.5 group/agent hover:opacity-80 transition-opacity">
+            <div className="w-[22px] h-[22px] rounded-full overflow-hidden bg-white shrink-0 relative border border-slate-200 shadow-sm">
+              {property.agent?.image ? (
+                <Image src={property.agent.image} fill className="object-cover" alt={property.agent.name || 'Agent'} />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-500 bg-slate-200">
+                  {(property.agent?.name || 'U').charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            <span className="text-[11px] text-slate-500 font-medium tracking-tight">
+              Publicat de <span className="font-bold text-slate-700 group-hover/agent:text-[#139E69] transition-colors">{property.agent?.name || 'Proprietar'}</span> <span className="text-slate-400 font-normal px-1">•</span> astăzi
+            </span>
+          </Link>
           
           <div className="absolute top-2 right-5 z-20">
             <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-[0_4px_20px_rgba(0,0,0,0.06)] flex items-center justify-center w-[85px] h-[55px] overflow-hidden transition-transform group-hover:scale-105 duration-500">
@@ -188,8 +204,9 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
         <div className="p-5 flex-1 flex flex-col">
           <div className="space-y-1 mb-3">
              <div className="flex items-center gap-2 flex-wrap">
-               <p className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+               <p className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-baseline">
                  {formattedNumber} <span className="text-lg font-bold text-slate-500 ml-0.5">€</span>
+                 {property.status === 'for-rent' && <span className="text-sm font-bold text-slate-400 ml-1.5">/ lună</span>}
                </p>
                {property.oldPrice && property.oldPrice > property.price && (
                  <span className="text-[11px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md line-through">
@@ -209,6 +226,12 @@ export default function PropertyRowCard({ property }: PropertyRowCardProps) {
                   <Users size={16} className="text-slate-400" />
                   <span>{property.roommateDetails?.nrPersoaneActual || '0'} <span className="font-medium text-slate-400">Colegi</span></span>
                 </div>
+                <button 
+                  onClick={(e) => toggleFavorite(property.id, e)}
+                  className={`flex items-center justify-center w-11 h-11 rounded-xl border ${isFavorite(property.id) ? 'border-rose-200 bg-rose-50' : 'border-slate-200 bg-white'} hover:bg-slate-50 hover:border-slate-300 transition-colors shrink-0`}
+                >
+                  <Heart size={16} fill={isFavorite(property.id) ? "currentColor" : "transparent"} className={isFavorite(property.id) ? "text-rose-500" : "text-slate-400"} />
+                </button>
                 <div className="flex items-center gap-1.5" title="Profilul dorit pentru viitorul coleg">
                   <Heart size={16} className="text-slate-400" />
                   <span className="capitalize">{property.roommateDetails?.preferinteColeg?.slice(0, 15) || 'Oricine'}</span>

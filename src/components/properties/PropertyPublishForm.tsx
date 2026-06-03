@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, doc, updateDoc, increment, arrayUnion, getDoc } from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
+import Logo from '@/components/layout/Logo';
 
 const JUDETE_ROMANIA = [
   'Alba', 'Arad', 'Argeș', 'Bacău', 'Bihor', 'Bistrița-Năsăud', 'Botoșani', 'Brăila',
@@ -63,60 +64,30 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
 
   const submitAd = async () => {
     setIsFinalSubmitting(true);
-    let finalCost = 0;
-    
-    // Check wallet if promotional ad
-    if (formData.promoTier !== 'free') {
-      const baseCost = formData.promoTier === 'standard' ? 3 : 6;
-      const durationMultiplier = formData.promoDuration === '30' ? 2 : 1;
-      finalCost = baseCost * durationMultiplier;
-      
-      if (walletBalance < finalCost) {
-        alert("Fonduri insuficiente în portofel. Te rugăm să încarci contul sau alege modul Gratuit.");
-        setIsFinalSubmitting(false);
-        return;
-      }
-    }
 
     try {
-      if (user && formData.promoTier !== 'free') {
-        const newTx = {
-          id: 'tx_publish_' + Date.now(),
-          label: `Promovare la Publicare ${formData.promoTier === 'gold' ? 'GOLD VIP' : 'STANDARD'} (${formData.promoDuration}z): ${formData.description.substring(0, 15)}...`,
-          am: `-${finalCost.toFixed(2)}€`,
-          date: new Date().toLocaleString('ro-RO', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
-          type: 'out',
-          category: 'promo',
-          timestamp: Date.now()
-        };
-
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          walletBalance: increment(-finalCost),
-          walletHistory: arrayUnion(newTx)
-        });
-      }
-
-            if (isEditing && editId) {
-        const { promoTier, promoDuration, ...updateData } = formData;
+      if (isEditing && editId) {
+        const updateData = formData;
         await updateDoc(doc(db, 'anuncios', editId), {
           ...updateData,
-          
           updatedAt: serverTimestamp(),
           status: 'pending'
         });
       } else {
+        const baseSlug = `${formData.type || ''}-${formData.rooms ? formData.rooms + '-camere-' : ''}${formData.localitate || formData.city || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        const generatedSlug = baseSlug ? `${baseSlug}-${Math.random().toString(36).substring(2, 8)}` : `prop-${Date.now()}`;
+
         await addDoc(collection(db, 'anuncios'), {
           ...formData,
-          
+          slug: generatedSlug,
           userId: user?.uid || '',
           email: formData.email || user?.email || '',
           name: formData.name || user?.displayName || 'Anónimo',
           createdAt: serverTimestamp(),
           status: 'pending',
-          isPromoted: formData.promoTier !== 'free',
-          promoType: formData.promoTier === 'gold' ? 'gold' : (formData.promoTier === 'standard' ? 'standard' : null),
-          promoExpiresAt: formData.promoTier !== 'free' ? Date.now() + (parseInt(formData.promoDuration) * 24 * 60 * 60 * 1000) : null
+          isPromoted: false,
+          promoType: null,
+          promoExpiresAt: null
         });
       }
       router.push('/Profil/my-ads');
@@ -246,8 +217,6 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
     name: '',
     email: '',
     phone: '',
-    promoTier: 'free' as 'free' | 'standard' | 'gold',
-    promoDuration: '15' as '15' | '30',
     images: [] as string[],
     cautaColeg: true as boolean,
     nrPersoaneActual: '1' as string,
@@ -335,7 +304,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
   };
 
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
-  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 7));
+  const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 6));
 
   const stepsInfo = [
     { num: 1, title: 'Tipo de inmueble' },
@@ -343,8 +312,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
     { num: 3, title: 'Ubicación' },
     { num: 4, title: 'Multimedia' },
     { num: 5, title: 'Detalles y descripción' },
-    { num: 6, title: 'Visibilidad' },
-    { num: 7, title: 'Contacto y publicar' },
+    { num: 6, title: 'Contacto y publicar' },
   ];
 
   return (
@@ -352,8 +320,8 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
       {/* Navbar Minimalist */}
       <header className="bg-white border-b border-gray-200">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-black tracking-tighter text-black">
-            IMOB<span className="text-[#139E69]">.</span>
+          <Link href="/" className="flex items-center">
+            <Logo size="sm" />
           </Link>
           <div className="flex items-center gap-8">
             <div className="hidden md:flex items-center gap-3 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">
@@ -1575,180 +1543,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                 </div>
               )}
 
-              {currentStep === 6 && (() => {
-                const finalCost = formData.promoTier === 'free' ? 0 : (formData.promoTier === 'standard' ? 3 : 6) * (formData.promoDuration === '30' ? 2 : 1);
-                const isInsufficient = formData.promoTier !== 'free' && walletBalance < finalCost;
-
-                return (
-                  <div className="space-y-6">
-                    <header className="mb-2">
-                      <h1 className="text-2xl font-black text-[#333] mb-1">Elige tu visibilidad</h1>
-                      <p className="text-[#666] text-sm">Los anuncios premium reciben hasta <strong>10x más contactos</strong> y se venden un 40% más rápido.</p>
-                    </header>
-
-                    {/* Duration Toggle (iOS Style Segmented Control) */}
-                    <div className="flex items-center p-1 bg-slate-100/90 rounded-[14px] mb-4 w-full max-w-[260px] mx-auto shadow-inner border border-slate-200/60">
-                      <button
-                        onClick={() => updateField('promoDuration', '15')}
-                        className={`flex-1 py-1.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 ${formData.promoDuration === '15' ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        15 Zile
-                      </button>
-                      <button
-                        onClick={() => updateField('promoDuration', '30')}
-                        className={`flex-1 py-1.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 ${formData.promoDuration === '30' ? 'bg-white text-slate-800 shadow-sm border border-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
-                      >
-                        30 Zile
-                      </button>
-                    </div>
-
-                    <div className="flex flex-col gap-4">
-                      {/* Básico */}
-                      <button
-                        onClick={() => updateField('promoTier', 'free')}
-                        className={`relative flex items-center justify-between p-4 sm:p-5 rounded-[24px] border-2 transition-all duration-300 text-left w-full ${
-                          formData.promoTier === 'free'
-                            ? 'border-gray-800 bg-gray-50/50 shadow-sm'
-                            : 'border-gray-100/80 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-colors duration-300 ${formData.promoTier === 'free' ? 'bg-gray-800 text-white' : 'bg-gray-50 text-gray-400'}`}>
-                            <Info size={20} strokeWidth={2.5} />
-                          </div>
-                          <div>
-                            <span className={`text-[15px] font-black transition-colors ${formData.promoTier === 'free' ? 'text-gray-900' : 'text-gray-700'}`}>Básico</span>
-                            <p className="text-[11px] font-bold text-gray-400 mt-0.5">Aparece en resultados normales.</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4 shrink-0">
-                          <span className="text-[15px] font-extrabold text-gray-900">Gratis</span>
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                            formData.promoTier === 'free' ? 'border-gray-800 bg-gray-800' : 'border-gray-200'
-                          }`}>
-                            <Check size={14} className={`text-white transition-opacity ${formData.promoTier === 'free' ? 'opacity-100' : 'opacity-0'}`} strokeWidth={3} />
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Standard */}
-                      <button 
-                        onClick={() => updateField('promoTier', 'standard')}
-                        className={`relative flex items-center justify-between p-4 sm:p-5 rounded-[24px] border-2 transition-all duration-300 text-left w-full ${
-                          formData.promoTier === 'standard'
-                            ? 'border-[#f25c1a] bg-orange-50/20 shadow-lg shadow-orange-500/5'
-                            : 'border-gray-100/80 bg-white hover:border-[#f25c1a]/40 hover:shadow-lg hover:shadow-orange-500/5'
-                        }`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-colors duration-300 ${formData.promoTier === 'standard' ? 'bg-[#f25c1a] text-white' : 'bg-gray-50 text-gray-400'}`}>
-                            <TrendingUp size={20} strokeWidth={2.5} />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className={`text-[15px] font-black transition-colors ${formData.promoTier === 'standard' ? 'text-[#f25c1a]' : 'text-gray-900'}`}>Standard (5x Vizibilitate)</span>
-                            <span className="text-[11px] font-bold text-gray-400 mt-0.5">Preț: <span className="text-gray-900 font-extrabold ml-0.5">{formData.promoDuration === '30' ? '6.00€' : '3.00€'}</span></span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                            formData.promoTier === 'standard' ? 'border-[#f25c1a] bg-[#f25c1a]' : 'border-gray-200'
-                          }`}>
-                            <Check size={14} className={`text-white transition-opacity ${formData.promoTier === 'standard' ? 'opacity-100' : 'opacity-0'}`} strokeWidth={3} />
-                          </div>
-                        </div>
-                      </button>
-
-                      {/* Gold VIP */}
-                      <div className="relative mt-2">
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-black uppercase tracking-widest px-4 py-1 rounded-full shadow-md z-20 border-2 border-white">Recomandat</div>
-                        <button 
-                          onClick={() => updateField('promoTier', 'gold')}
-                          className={`w-full flex items-center justify-between p-4 sm:p-5 rounded-[24px] border-2 transition-all duration-300 text-left group ${
-                            formData.promoTier === 'gold'
-                              ? 'border-amber-400 bg-gradient-to-br from-[#FFFAF0] to-[#FFF5EB] shadow-xl shadow-orange-500/10'
-                              : 'border-amber-200 hover:border-amber-400 bg-white hover:bg-gradient-to-br hover:from-[#FFFAF0] hover:to-[#FFF5EB] hover:shadow-xl hover:shadow-orange-500/10'
-                          }`}
-                        >
-                          <div className="flex items-center gap-4 relative z-10 w-full justify-between">
-                            <div className="flex items-center gap-4">
-                              <div className={`w-12 h-12 bg-gradient-to-br from-amber-400 to-orange-500 rounded-[16px] flex items-center justify-center text-white shadow-md shadow-amber-500/20 transition-transform duration-300 ${formData.promoTier === 'gold' ? 'scale-110' : 'group-hover:scale-110'}`}>
-                                <Star size={20} fill="currentColor" strokeWidth={0} />
-                              </div>
-                              <div className="flex flex-col">
-                                <span className={`text-[15px] font-black drop-shadow-sm transition-colors ${formData.promoTier === 'gold' ? 'text-amber-700' : 'text-amber-600'}`}>Gold VIP (10x Vizibilitate)</span>
-                                <span className="text-[11px] font-bold text-amber-700/60 mt-0.5">Preț: <span className="text-amber-600 font-extrabold ml-0.5">{formData.promoDuration === '30' ? '12.00€' : '6.00€'}</span></span>
-                              </div>
-                            </div>
-                            <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                              formData.promoTier === 'gold' ? 'border-amber-500 bg-amber-500' : 'border-amber-200 bg-white'
-                            }`}>
-                              <Check size={14} className={`text-white transition-opacity ${formData.promoTier === 'gold' ? 'opacity-100' : 'opacity-0'}`} strokeWidth={3} />
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Wallet Check & Warning */}
-                    <AnimatePresence>
-                      {formData.promoTier !== 'free' && (
-                        <motion.div 
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className={`mt-2 flex flex-col gap-3 p-5 rounded-2xl border-2 transition-colors ${isInsufficient ? 'bg-red-50/50 border-red-100' : 'bg-gray-50/50 border-gray-100'}`}>
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white rounded-[14px] flex items-center justify-center text-gray-500 shadow-sm">
-                                  <Wallet size={18} strokeWidth={2.5} />
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Portofelul Meu</span>
-                                  <span className={`text-[15px] font-extrabold ${isInsufficient ? 'text-red-500' : 'text-gray-900'}`}>{walletBalance.toFixed(2)}€ disponibili</span>
-                                </div>
-                              </div>
-                              <div className="text-right flex flex-col items-end">
-                                <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Cost Promo</span>
-                                <span className="text-[15px] font-extrabold text-[#f25c1a]">{finalCost.toFixed(2)}€</span>
-                              </div>
-
-                            </div>
-
-                            {isInsufficient && (
-                              <div className="flex items-start gap-2 pt-3 border-t border-red-100/50">
-                                <Info size={16} className="text-red-500 shrink-0 mt-0.5" />
-                                <p className="text-[12px] font-bold text-red-500 leading-tight">Nu ai suficiente fonduri pentru acest plan. Alege planul Gratuit sau încarcă portofelul din contul tău dopo crearea anunțului.</p>
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-
-                    <div className="pt-8 border-t border-gray-100 flex justify-between">
-                      <button onClick={prevStep} className="flex items-center gap-3 text-gray-500 hover:text-gray-900 px-6 py-3 font-bold transition-all text-base group">
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Anterior
-                      </button>
-                      <button 
-                        onClick={() => {
-                          if (isInsufficient) {
-                            alert("Fonduri insuficiente în portofel. Te rugăm să încarci contul sau alege modul Gratuit.");
-                          } else {
-                            nextStep();
-                          }
-                        }} 
-                        className={`flex items-center gap-3 px-10 py-4 rounded-[20px] font-black transition-all shadow-lg text-base group ${isInsufficient ? 'bg-gray-300 text-white cursor-not-allowed shadow-none' : 'bg-[#139E69] hover:bg-[#0f8256] text-white hover:shadow-xl hover:shadow-[#139E69]/20'}`}
-                      >
-                        Continuar <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                      </button>
-                    </div>
-                  </div>
-                );
-              })()}
-
-              {currentStep === 7 && (
+              {currentStep === 6 && (
                 <div className="space-y-10">
                    <header className="text-center">
                      <div className="w-20 h-20 bg-[#EAF5EE] text-[#139E69] rounded-full flex items-center justify-center mx-auto mb-6">
@@ -1757,32 +1552,6 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                      <h1 className="text-2xl font-black text-[#333] mb-3">¡Casi listo!</h1>
                      <p className="text-[#666] text-lg">Confirma tus datos de contacto para finalizar.</p>
                    </header>
-
-                  {/* Promotion Summary */}
-                  {formData.promoTier !== 'free' && (() => {
-                    const finalCost = formData.promoTier === 'standard' ? 3 : 6 * (formData.promoDuration === '30' ? 2 : 1);
-                    return (
-                      <div className={`flex items-center gap-4 p-5 rounded-2xl border ${
-                        formData.promoTier === 'gold'
-                          ? 'bg-[#FFF9F5] border-amber-200'
-                          : 'bg-orange-50/20 border-orange-200'
-                      }`}>
-                        <div className={`w-12 h-12 rounded-[16px] flex items-center justify-center shadow-sm ${
-                          formData.promoTier === 'gold' ? 'bg-gradient-to-br from-amber-400 to-orange-500 text-white' : 'bg-[#f25c1a] text-white'
-                        }`}>
-                          {formData.promoTier === 'gold' ? <Star size={20} fill="currentColor" strokeWidth={0} /> : <TrendingUp size={20} strokeWidth={2.5} />}
-                        </div>
-                        <div>
-                          <p className="text-[15px] font-black text-gray-800">
-                            Plan: {formData.promoTier === 'gold' ? 'Gold VIP (10x)' : 'Standard (5x)'} - {formData.promoDuration} Zile
-                          </p>
-                          <p className="text-xs text-gray-500 font-bold">
-                            <span className="text-[#f25c1a] font-extrabold">{finalCost.toFixed(2)}€</span> se descontarán al publicar.
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })()}
 
                    <div className="bg-gray-50 p-10 rounded-3xl border border-gray-100 space-y-8">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -1830,9 +1599,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                         onClick={submitAd}
                         disabled={isFinalSubmitting}
                         className={`text-white px-12 py-5 rounded-[16px] font-black transition-all shadow-xl text-[16px] uppercase tracking-wider flex items-center justify-center gap-3 ${
-                          formData.promoTier !== 'free'
-                            ? 'bg-[#139E69] hover:bg-[#0f8256]'
-                            : 'bg-gray-900 hover:bg-black'
+                          'bg-[#139E69] hover:bg-[#0f8256]'
                         } ${(isFinalSubmitting || formData.images.length === 0) ? 'opacity-70 cursor-not-allowed' : ''}`}
                       >
                         {isFinalSubmitting ? (
@@ -1841,7 +1608,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                             Publicando...
                           </>
                         ) : (
-                          formData.promoTier === 'free' ? 'Publicar Gratis' : `Pătește și Publică`
+                          'Publicar'
                         )}
                       </button>
                    </div>

@@ -17,7 +17,18 @@ export default function FeaturedProperties() {
       try {
         const q = query(collection(db, 'anuncios'), where('status', '==', 'active'));
         const snap = await getDocs(q);
-        const mapped = snap.docs.map(doc => {
+        const isAdExpired = (d: any) => {
+          if (d.status === 'expired' || d.status === 'inactive') return true;
+          if (d.createdAt) {
+            const created = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
+            const expiry = new Date(created);
+            expiry.setDate(expiry.getDate() + 30);
+            return new Date() > expiry;
+          }
+          return false;
+        };
+
+        const mapped = snap.docs.filter(doc => !isAdExpired(doc.data())).map(doc => {
           const d = doc.data();
           return {
             id: doc.id,

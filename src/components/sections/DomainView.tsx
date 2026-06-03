@@ -5,6 +5,7 @@ import { useDomain } from '@/context/DomainContext';
 import FeaturedProperties from './FeaturedProperties';
 import RecommendedSearches from './RecommendedSearches';
 import FeaturedAutos from './FeaturedAutos';
+import RecommendedAutoSearches from './RecommendedAutoSearches';
 
 export default function DomainView() {
   const { domain } = useDomain();
@@ -13,6 +14,7 @@ export default function DomainView() {
     return (
       <>
         <FeaturedAutos />
+        <RecommendedAutoSearches />
       </>
     );
   }

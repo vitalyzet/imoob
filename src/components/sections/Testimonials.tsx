@@ -11,7 +11,7 @@ export default function Testimonials() {
             Lo que dicen <span className="text-[#139E69]">nuestros clientes</span>
           </h2>
           <p className="text-[#666] max-w-2xl mx-auto text-lg font-medium leading-relaxed">
-            Miles de personas ya han encontrado el hogar de sus sueños con imoob. Conoce sus historias de éxito.
+            Miles de personas ya han encontrado el hogar de sus sueños con Xmobe. Conoce sus historias de éxito.
           </p>
         </div>
 

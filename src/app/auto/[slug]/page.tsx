@@ -8,7 +8,7 @@ import { db } from '@/lib/firebase';
 import AutoContactCard from '@/components/properties/AutoContactCard';
 import PropertyGallery from '@/components/properties/PropertyGallery';
 import AutoCard from '@/components/properties/AutoCard';
-import { MapPin, Calendar, Gauge, Fuel, Cog, Car, Heart, Share2, CheckCircle2, Loader2, AlertTriangle, Eye, Flag, Users } from 'lucide-react';
+import { MapPin, Calendar, Gauge, Fuel, Cog, Car, Heart, Share2, CheckCircle2, Loader2, AlertTriangle, Eye, Flag, Users, ChevronLeft } from 'lucide-react';
 
 export default function AutoDetailsPage() {
   const params = useParams();
@@ -23,10 +23,41 @@ export default function AutoDetailsPage() {
     const fetchAuto = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, 'anuncios_auto', slug);
-        const snap = await getDoc(docRef);
-        if (snap.exists()) {
-          const autoData = { id: snap.id, ...snap.data() } as any;
+        let autoData: any = null;
+
+        // Try searching by slug field first
+        const q = query(collection(db, 'anuncios_auto'), where('slug', '==', slug), limit(1));
+        const qSnap = await getDocs(q);
+        
+        if (!qSnap.empty) {
+          const fetchedDoc = qSnap.docs[0];
+          autoData = { id: fetchedDoc.id, ...fetchedDoc.data() };
+        } else {
+          // Fallback to querying by document ID for backwards compatibility
+          const docRef = doc(db, 'anuncios_auto', slug);
+          const snap = await getDoc(docRef);
+          if (snap.exists()) {
+            autoData = { id: snap.id, ...snap.data() };
+          }
+        }
+
+        if (autoData) {
+          
+          if (autoData.userId) {
+            try {
+              const userSnap = await getDoc(doc(db, 'users', autoData.userId));
+              if (userSnap.exists()) {
+                const userData = userSnap.data();
+                if (userData.name) autoData.name = userData.name;
+                if (userData.phone) autoData.phone = userData.phone;
+                if (userData.email) autoData.email = userData.email;
+                if (userData.location) autoData.city = userData.location;
+              }
+            } catch (e) {
+              console.error("Eroare la preluarea datelor live ale vânzătorului:", e);
+            }
+          }
+          
           setAuto(autoData);
           
           // Fetch similar cars
@@ -135,6 +166,7 @@ export default function AutoDetailsPage() {
   // Helper for mapping Auto data to AutoCard format
   const mapForCard = (a: any) => ({
     id: a.id,
+    slug: a.slug || '',
     title: `${a.marca || ''} ${a.model || ''}`.trim() || 'Vehicul',
     price: Number(a.price) || 0,
     oldPrice: a.oldPrice ? Number(a.oldPrice) : null,
@@ -146,6 +178,7 @@ export default function AutoDetailsPage() {
     location: a.city || '',
     image: a.images?.[0] || '',
     promoType: a.promoType || (a.isPromoted ? 'standard' : null),
+    createdAt: a.createdAt || a.timestamp || null,
   });
 
   return (
@@ -161,12 +194,22 @@ export default function AutoDetailsPage() {
           
           {/* Breadcrumbs & Top Actions */}
           <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
-            <div className="flex items-center gap-2 text-[13px] text-gray-500 font-medium">
-              <Link href="/" className="hover:text-[var(--primary)] transition-colors">imoob</Link>
-              <span className="text-gray-300">/</span>
-              <Link href="/" className="hover:text-[var(--primary)] transition-colors">Auto</Link>
-              <span className="text-gray-300">/</span>
-              <span className="text-gray-400 truncate">{title}</span>
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={() => window.history.back()} 
+                className="w-10 h-10 flex items-center justify-center bg-white border border-gray-200 rounded-full text-gray-500 hover:text-[var(--primary)] hover:border-[var(--primary)] hover:bg-[var(--primary)]/5 transition-all shadow-sm group shrink-0"
+                title="Înapoi la rezultate"
+              >
+                <ChevronLeft size={20} strokeWidth={2.5} className="group-hover:-translate-x-0.5 transition-transform" />
+              </button>
+              
+              <div className="flex items-center gap-2 text-[13px] text-gray-500 font-medium">
+                <Link href="/" className="hover:text-[var(--primary)] transition-colors hidden sm:block">xmobe</Link>
+                <span className="text-gray-300 hidden sm:block">/</span>
+                <Link href="/auto" className="hover:text-[var(--primary)] transition-colors">Auto</Link>
+                <span className="text-gray-300">/</span>
+                <span className="text-gray-400 truncate max-w-[150px] md:max-w-xs">{title}</span>
+              </div>
             </div>
 
             <div className="flex gap-3">
@@ -349,13 +392,22 @@ export default function AutoDetailsPage() {
                   auto.caroserie && ['Tip Caroserie', auto.caroserie],
                   auto.culoare && ['Culoare', auto.culoare],
                   auto.rulaj && ['Rulaj', `${Number(auto.rulaj).toLocaleString('ro-RO')} km`],
+                  auto.tractiune && ['Tracțiune', auto.tractiune],
+                  auto.greutate && ['Masă / Greutate', `${auto.greutate} kg`],
+                  auto.nrCilindri && ['Număr cilindri', auto.nrCilindri],
+                  auto.nrUsi && ['Număr uși', auto.nrUsi],
+                  auto.nrLocuri && ['Număr locuri', auto.nrLocuri],
                   auto.stare && ['Stare', auto.stare],
+                  auto.garantie && auto.garantie !== 'Fără garanție' && ['Garanție', auto.garantie],
                 ].filter(Boolean).map((item, idx) => {
                   const [label, value] = item as [string, string];
                   return (
-                    <div key={idx} className="flex justify-between items-center py-4 px-5 border-b border-gray-100/80 hover:bg-[#f8fafc] transition-colors group">
-                      <span className="text-[14px] text-[#94a3b8] font-medium group-hover:text-[#64748b] transition-colors">{label}</span>
-                      <span className="text-[14px] text-[#0f172a] font-bold capitalize">{value}</span>
+                    <div key={idx} className={`flex justify-between items-center py-4 px-5 border-b transition-colors group ${label === 'Garanție' ? 'bg-[#f0fdf4] hover:bg-[#dcfce7] border-emerald-100 rounded-lg my-1' : 'border-gray-100/80 hover:bg-[#f8fafc]'}`}>
+                      <span className={`text-[14px] font-medium transition-colors flex items-center gap-1.5 ${label === 'Garanție' ? 'text-emerald-600 font-bold' : 'text-[#94a3b8] group-hover:text-[#64748b]'}`}>
+                        {label === 'Garanție' && <CheckCircle2 size={16} />}
+                        {label}
+                      </span>
+                      <span className={`text-[14px] font-bold capitalize ${label === 'Garanție' ? 'text-emerald-700' : 'text-[#0f172a]'}`}>{value}</span>
                     </div>
                   );
                 })}
@@ -375,7 +427,9 @@ export default function AutoDetailsPage() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6">
                 <div className="bg-[#f8fafc] rounded-xl p-4 border border-gray-100/60">
-                  <span className="text-[18px] font-black text-[#0f172a] block">{new Intl.NumberFormat('ro-RO').format(price)} €</span>
+                  <span className="text-[18px] font-black text-[#0f172a] block">
+                    {auto.oldPrice && Number(auto.oldPrice) > price ? new Intl.NumberFormat('ro-RO').format(Number(auto.oldPrice)) : new Intl.NumberFormat('ro-RO').format(price)} €
+                  </span>
                   <span className="text-[12px] text-[#94a3b8] font-medium">Preț inițial</span>
                 </div>
                 <div className="bg-[#f8fafc] rounded-xl p-4 border border-gray-100/60">
@@ -383,7 +437,13 @@ export default function AutoDetailsPage() {
                   <span className="text-[12px] text-[#94a3b8] font-medium">Preț curent</span>
                 </div>
                 <div className="bg-[#f8fafc] rounded-xl p-4 border border-gray-100/60">
-                  <span className="text-[18px] font-black text-[#0f172a] block">Fara reducere</span>
+                  {auto.oldPrice && Number(auto.oldPrice) > price ? (
+                    <span className="text-[18px] font-black text-rose-500 block">
+                      -{new Intl.NumberFormat('ro-RO').format(Number(auto.oldPrice) - price)} €
+                    </span>
+                  ) : (
+                    <span className="text-[18px] font-black text-[#0f172a] block">Fara reducere</span>
+                  )}
                   <span className="text-[12px] text-[#94a3b8] font-medium">Reducere</span>
                 </div>
                 <div className="bg-[#f8fafc] rounded-xl p-4 border border-gray-100/60">
@@ -413,13 +473,17 @@ export default function AutoDetailsPage() {
           
           {/* Sidebar */}
           <div className="space-y-5">
-             <AutoContactCard seller={{
-               name: auto.name || 'Proprietar',
-               phone: auto.phone || '',
-               email: auto.email || '',
-               type: auto.tipVanzator || 'particular',
-               memberSince: auto.createdAt?.seconds ? new Date(auto.createdAt.seconds * 1000).getFullYear().toString() : '2026'
-             }} />
+             <AutoContactCard 
+               seller={{
+                 id: auto.userId,
+                 name: auto.name || 'Proprietar',
+                 phone: auto.phone || '',
+                 email: auto.email || '',
+                 type: auto.tipVanzator || 'particular',
+                 memberSince: auto.createdAt?.seconds ? new Date(auto.createdAt.seconds * 1000).getFullYear().toString() : '2026'
+               }} 
+               auto={auto}
+             />
              {/* Safety Tips */}
              <div className="bg-gradient-to-br from-[#f0fdf4] to-[#ecfdf5] p-6 rounded-[20px] border border-emerald-100/60">
                 <h4 className="font-bold text-[#1e293b] mb-3 flex items-center gap-2.5 text-[15px]">

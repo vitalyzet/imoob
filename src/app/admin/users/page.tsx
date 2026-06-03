@@ -180,7 +180,7 @@ export default function AdminUsersPage() {
     // Header
     doc.setFontSize(22);
     doc.setTextColor(30, 41, 59);
-    doc.text('IMOOB', 14, 20);
+    doc.text('XMOBE', 14, 20);
     
     doc.setFontSize(10);
     doc.setTextColor(100, 116, 139);
@@ -262,7 +262,7 @@ export default function AdminUsersPage() {
       });
     }
 
-    doc.save(`Reporte_IMOOB_${user.name ? user.name.replace(/\s+/g, '_') : 'Usuario'}.pdf`);
+    doc.save(`Reporte_XMOBE_${user.name ? user.name.replace(/\s+/g, '_') : 'Usuario'}.pdf`);
   };
 
   const filtered = users.filter(u => {

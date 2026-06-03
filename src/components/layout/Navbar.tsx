@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Car, Building2, Mail, MessageSquare, FolderSearch, Heart, User, Menu, X, ChevronLeft, Search, Trash2, ChevronDown, Clock, XCircle, LayoutGrid, Phone, ThumbsUp, PlusSquare, List, Wallet, Settings, LogOut } from 'lucide-react';
+import { Car, Building2, Mail, MessageSquare, FolderSearch, Heart, User, Menu, X, ChevronLeft, Search, Trash2, ChevronDown, Clock, XCircle, LayoutGrid, Phone, ThumbsUp, PlusSquare, List, Wallet, Settings, LogOut, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useSavedSearches } from '@/hooks/useSavedSearches';
 import { useAuth } from '@/context/AuthContext';
 import { useDomain } from '@/context/DomainContext';
+import Logo from '@/components/layout/Logo';
 import { doc, onSnapshot, query, collection, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
@@ -35,12 +36,16 @@ export default function Navbar() {
   const [dashboardTitle, setDashboardTitle] = useState('Profil');
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [adsCount, setAdsCount] = useState<number>(0);
+  const [expiredAdsCount, setExpiredAdsCount] = useState<number>(0);
+  const [showExpiredBanner, setShowExpiredBanner] = useState<boolean>(false);
   const [unreadMessages, setUnreadMessages] = useState<number>(0);
 
   useEffect(() => {
     if (!user) {
       setWalletBalance(0);
       setAdsCount(0);
+      setExpiredAdsCount(0);
+      setShowExpiredBanner(false);
       setUnreadMessages(0);
       return;
     }
@@ -53,11 +58,49 @@ export default function Navbar() {
       }
     });
 
-    // 2. Real-time ads count
-    const q = query(collection(db, 'anuncios'), where('userId', '==', user.uid));
-    const unsubAds = onSnapshot(q, (snapshot) => {
-      setAdsCount(snapshot.size);
-      console.log("[Navbar] Real-time ads count update:", snapshot.size);
+    // 2. Real-time ads count & expired check
+    const q1 = query(collection(db, 'anuncios'), where('userId', '==', user.uid));
+    const q2 = query(collection(db, 'anuncios_auto'), where('userId', '==', user.uid));
+    
+    let imobAds: any[] = [];
+    let autoAds: any[] = [];
+    
+    const calculateCounts = () => {
+      const all = [...imobAds, ...autoAds];
+      setAdsCount(all.length);
+      
+      const isAdExpired = (d: any) => {
+        if (d.status === 'expired' || d.status === 'inactive') return true;
+        if (d.createdAt) {
+          const created = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
+          const expiry = new Date(created);
+          expiry.setDate(expiry.getDate() + 30);
+          return new Date() > expiry;
+        }
+        return false;
+      };
+      
+      const expiredCount = all.filter(d => isAdExpired(d)).length;
+      setExpiredAdsCount(expiredCount);
+      
+      if (expiredCount > 0) {
+        const lastDismissed = localStorage.getItem('expired_alert_dismissed');
+        if (!lastDismissed || (Date.now() - Number(lastDismissed) > 24 * 60 * 60 * 1000)) {
+          setShowExpiredBanner(true);
+        }
+      } else {
+        setShowExpiredBanner(false);
+      }
+    };
+
+    const unsubAds1 = onSnapshot(q1, (snapshot) => {
+      imobAds = snapshot.docs.map(doc => doc.data());
+      calculateCounts();
+    });
+    
+    const unsubAds2 = onSnapshot(q2, (snapshot) => {
+      autoAds = snapshot.docs.map(doc => doc.data());
+      calculateCounts();
     });
 
     // 3. Real-time unread messages
@@ -75,7 +118,8 @@ export default function Navbar() {
 
     return () => {
       unsubUser();
-      unsubAds();
+      unsubAds1();
+      unsubAds2();
       unsubChats();
     };
   }, [user]);
@@ -96,6 +140,11 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const dismissBanner = () => {
+    localStorage.setItem('expired_alert_dismissed', Date.now().toString());
+    setShowExpiredBanner(false);
+  };
 
   if (pathname === '/publicar-anuncio' || pathname.startsWith('/admin') || pathname.startsWith('/auth')) return null;
 
@@ -202,7 +251,26 @@ export default function Navbar() {
 
   if (isDashboard) {
     return (
-      <header className="fixed w-full z-50 bg-[#f25c1a] py-3 shadow-md">
+      <>
+      <AnimatePresence>
+        {showExpiredBanner && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 bg-red-500 text-white text-[11px] md:text-[13px] py-1.5 md:py-2 z-[60] text-center font-bold tracking-wide shadow-md flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4"
+          >
+            <div className="flex items-center gap-1.5"><Clock size={14} /> <span>Ai {expiredAdsCount} anunț{expiredAdsCount === 1 ? '' : 'uri'} expirat{expiredAdsCount === 1 ? '' : 'e'}. Vizibilitate oprită în căutări.</span></div>
+            <Link href="/Profil/my-ads?tab=expired" className="bg-white text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs hover:bg-red-50 transition-colors uppercase tracking-widest shadow-sm">
+              Reactivează acum
+            </Link>
+            <button onClick={dismissBanner} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-1 transition-colors">
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <header className={`fixed w-full z-50 bg-[#f25c1a] py-3 shadow-md transition-all ${showExpiredBanner ? 'top-[36px] md:top-[44px]' : 'top-0'}`}>
         <div className="container mx-auto px-4 flex justify-between items-center">
           {/* Left: Back and Logo */}
           <div className="flex items-center gap-4 sm:gap-6">
@@ -210,8 +278,8 @@ export default function Navbar() {
               <ChevronLeft size={28} strokeWidth={1.5} />
             </Link>
             
-            <Link href="/" className="text-2xl sm:text-3xl font-serif font-black tracking-tighter text-white">
-              IMOB<span className="text-white/80">.</span>
+            <Link href="/" className="flex items-center">
+              <Logo size="md" dark={true} />
             </Link>
 
             <div className="hidden sm:flex items-center">
@@ -225,10 +293,6 @@ export default function Navbar() {
           {/* Right: Icons, User, Menu */}
           <div className="flex items-center gap-4 sm:gap-6">
             <nav className="hidden md:flex items-center gap-5 mr-2">
-              <Link href="/Dashboard" className="text-white hover:text-white/80 transition-colors">
-                <Mail size={24} strokeWidth={1.5} />
-              </Link>
-              
               <Link href="/Profil/messages" className="text-white hover:text-white/80 transition-colors relative group">
                 <MessageSquare size={24} strokeWidth={1.5} />
                 {unreadMessages > 0 && (
@@ -243,7 +307,7 @@ export default function Navbar() {
                   onClick={() => setShowSavedSearches(!showSavedSearches)}
                   className="text-white hover:text-white/80 transition-colors relative"
                 >
-                  <FolderSearch size={24} strokeWidth={1.5} />
+                  <Bell size={24} strokeWidth={1.5} />
                   {savedSearches.length > 0 && (
                     <span className="absolute -top-1 -right-1 bg-white text-[#f25c1a] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-[#f25c1a]">
                       {savedSearches.length}
@@ -350,16 +414,36 @@ export default function Navbar() {
           {isOpen && renderUserPanel()}
         </AnimatePresence>
       </header>
+      </>
     );
   }
 
   return (
-    <header className={navClass}>
+    <>
+      <AnimatePresence>
+        {showExpiredBanner && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="fixed top-0 left-0 right-0 bg-red-500 text-white text-[11px] md:text-[13px] py-1.5 md:py-2 z-[60] text-center font-bold tracking-wide shadow-md flex flex-wrap items-center justify-center gap-x-2 gap-y-1 px-4"
+          >
+            <div className="flex items-center gap-1.5"><Clock size={14} /> <span>Ai {expiredAdsCount} anunț{expiredAdsCount === 1 ? '' : 'uri'} expirat{expiredAdsCount === 1 ? '' : 'e'}. Vizibilitate oprită în căutări.</span></div>
+            <Link href="/Profil/my-ads?tab=expired" className="bg-white text-red-500 px-3 py-1 rounded-full text-[10px] md:text-xs hover:bg-red-50 transition-colors uppercase tracking-widest shadow-sm">
+              Reactivează acum
+            </Link>
+            <button onClick={dismissBanner} className="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white p-1 transition-colors">
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    <header className={`${navClass} ${showExpiredBanner ? 'top-[36px] md:top-[44px]' : 'top-0'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
         {/* Left: Logo */}
         <div className="flex items-center gap-6">
-          <Link href="/" className={`text-3xl font-serif font-black tracking-tighter ${textColor}`}>
-            IMOB<span className="text-[var(--primary)]">.</span>
+          <Link href="/" className="flex items-center">
+            <Logo size="md" dark={textColor === 'text-white'} />
           </Link>
           
           {/* Domain Switcher */}
@@ -389,10 +473,6 @@ export default function Navbar() {
         </div>
         {/* Right: Icon Navigation (Desktop) */}
         <nav className="hidden lg:flex items-center gap-6">
-          <Link href="/Profil" className={`${iconColor} ${hoverColor} transition-colors`}>
-            <Mail size={24} strokeWidth={1.5} />
-          </Link>
-          
           <Link href="/Profil/messages" className={`${iconColor} ${hoverColor} transition-colors relative group`}>
             <MessageSquare size={24} strokeWidth={1.5} />
             {unreadMessages > 0 && (
@@ -410,7 +490,7 @@ export default function Navbar() {
               onClick={() => setShowSavedSearches(!showSavedSearches)}
               className={`${iconColor} ${hoverColor} transition-colors relative`}
             >
-              <FolderSearch size={24} strokeWidth={1.5} />
+              <Bell size={24} strokeWidth={1.5} />
               {savedSearches.length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-[#4567c1] text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">
                   {savedSearches.length}
@@ -512,8 +592,26 @@ export default function Navbar() {
               Iniciar sesión
             </Link>
           )}
- 
           
+          {/* Language Switcher */}
+          <div className="relative group ml-3 flex items-center">
+            <button className={`flex items-center gap-1.5 px-2.5 py-2 rounded-lg hover:bg-black/5 transition-all ${textColor}`}>
+              <img src="https://flagcdn.com/w20/ro.png" alt="RO" className="w-[18px] h-[13px] object-cover rounded-sm shadow-[0_0_2px_rgba(0,0,0,0.2)]" />
+              <span className="text-[13px] font-bold tracking-wide">RO</span>
+              <ChevronDown size={14} className="opacity-70 group-hover:rotate-180 transition-transform duration-300" />
+            </button>
+            <div className="absolute top-full right-0 mt-1 w-36 bg-white rounded-xl shadow-xl border border-gray-100 py-1.5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 translate-y-1 group-hover:translate-y-0 z-50">
+              <button className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-gray-700 hover:bg-gray-50 transition-colors">
+                <img src="https://flagcdn.com/w20/es.png" alt="ES" className="w-[18px] h-[13px] object-cover rounded-sm shadow-[0_0_2px_rgba(0,0,0,0.2)]" />
+                <span className="font-medium">Español</span>
+              </button>
+              <button className="w-full flex items-center gap-3 px-4 py-2.5 text-[13px] text-sky-600 bg-sky-50 transition-colors">
+                <img src="https://flagcdn.com/w20/ro.png" alt="RO" className="w-[18px] h-[13px] object-cover rounded-sm shadow-[0_0_2px_rgba(0,0,0,0.2)]" />
+                <span className="font-bold">Română</span>
+              </button>
+            </div>
+          </div>
+ 
           <Link 
             href="/publicar-anuncio"
             className="ml-4 bg-[#574188] hover:bg-[#483570] text-white px-5 py-2 rounded-sm transition-all flex flex-col items-center shadow-sm"
@@ -575,12 +673,12 @@ export default function Navbar() {
         </div>
       </div>
  
-      {/* Standard Unified User Panel */}
       <div className="relative container mx-auto px-6 flex justify-end">
         <AnimatePresence>
           {isOpen && renderUserPanel()}
         </AnimatePresence>
       </div>
     </header>
+    </>
   );
 }

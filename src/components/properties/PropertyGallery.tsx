@@ -137,6 +137,7 @@ export default function PropertyGallery({ images, title, agent, propertyInfo }: 
         images={validImages}
         title={title}
         agent={agent}
+        propertyInfo={propertyInfo}
       />
 
       <PhotoLightbox 

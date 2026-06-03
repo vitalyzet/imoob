@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useDomain } from '@/context/DomainContext';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 
 interface ContactFormProps {
@@ -13,8 +14,37 @@ interface ContactFormProps {
 export default function ContactForm({ property }: ContactFormProps) {
   const { user } = useAuth();
   const router = useRouter();
-  const [message, setMessage] = useState('Bună ziua, am văzut această proprietate pe IMOOB și mă interesează să primesc mai multe informații. Vă mulțumesc!');
+  const { domain } = useDomain();
+  const defaultMessage = domain === 'auto' 
+    ? 'Bună ziua, am văzut acest autoturism pe Xmobe și mă interesează să primesc mai multe informații. Vă mulțumesc!'
+    : 'Bună ziua, am văzut această proprietate pe Xmobe și mă interesează să primesc mai multe informații. Vă mulțumesc!';
+  const [message, setMessage] = useState(defaultMessage);
   const [loading, setLoading] = useState(false);
+  const [existingChatId, setExistingChatId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user || !property) return;
+    const checkExistingChat = async () => {
+      try {
+        const chatsRef = collection(db, 'chats');
+        const q = query(chatsRef, where('participants', 'array-contains', user.uid));
+        const snap = await getDocs(q);
+        const sellerId = property.agent?.id || 'unknown';
+        
+        let foundChat = null;
+        snap.forEach(docSnap => {
+          const data = docSnap.data();
+          if (data.propertyId === property.id && data.participants.includes(sellerId)) {
+            foundChat = docSnap.id;
+          }
+        });
+        setExistingChatId(foundChat);
+      } catch (error) {
+        console.error("Error checking chat:", error);
+      }
+    };
+    checkExistingChat();
+  }, [user, property]);
 
   const handleSendMessage = async () => {
     if (!user) {
@@ -30,32 +60,33 @@ export default function ContactForm({ property }: ContactFormProps) {
       const sellerId = property.agent?.id || 'unknown';
       const buyerId = user.uid;
 
-      // Ensure we don't message ourselves
-      if (sellerId === buyerId) {
-        alert("Nu poți trimite un mesaj la propria proprietate.");
-        setLoading(false);
-        return;
-      }
+      // DESACTIVADO PARA PRUEBAS: Permitir enviarse mensajes a uno mismo
+      // if (sellerId === buyerId) {
+      //   alert("Nu poți trimite un mesaj la propria proprietate.");
+      //   setLoading(false);
+      //   return;
+      // }
 
       const chatsRef = collection(db, 'chats');
       const q = query(chatsRef, where('participants', 'array-contains', buyerId));
       const querySnapshot = await getDocs(q);
 
-      let existingChatId = null;
+      let existingChatId: string | null = null;
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
         if (data.propertyId === property.id && data.participants.includes(sellerId)) {
-          existingChatId = doc.id;
+          existingChatId = docSnap.id;
         }
       });
 
-      let chatId = existingChatId;
+      let chatId: string | null = existingChatId;
 
       if (!chatId) {
         // Create new chat
         const newChat = await addDoc(chatsRef, {
           propertyId: property.id,
+          propertyType: domain === 'auto' ? 'auto' : 'imobiliare',
           propertyTitle: property.title,
           propertyImage: property.images?.[0] || '',
           propertyPrice: property.price || 0,
@@ -65,8 +96,11 @@ export default function ContactForm({ property }: ContactFormProps) {
           sellerId: sellerId,
           buyerName: user.displayName || 'Utilizator',
           sellerName: property.agent?.name || 'Vânzător',
+          buyerImage: user.photoURL || '',
+          sellerImage: property.agent?.image || '',
           updatedAt: serverTimestamp(),
           lastMessage: message,
+          lastSenderId: buyerId,
           unreadBy: [sellerId]
         });
         chatId = newChat.id;
@@ -75,6 +109,7 @@ export default function ContactForm({ property }: ContactFormProps) {
         await updateDoc(doc(db, 'chats', chatId), {
           updatedAt: serverTimestamp(),
           lastMessage: message,
+          lastSenderId: buyerId,
           unreadBy: [sellerId]
         });
       }
@@ -121,13 +156,23 @@ export default function ContactForm({ property }: ContactFormProps) {
         <label htmlFor="privacy" className="text-[13px] text-gray-500 font-medium leading-tight cursor-pointer select-none">Sunt de acord cu politica de confidențialitate și termenii de utilizare</label>
       </div>
 
-      <button 
-        type="submit" 
-        disabled={loading}
-        className="w-full bg-[#f25c1d] hover:bg-[#eb5211] text-white py-4 font-bold rounded-xl transition-all shadow-[0_4px_14px_rgba(242,92,29,0.3)] hover:shadow-[0_6px_20px_rgba(242,92,29,0.4)] hover:-translate-y-0.5 text-[16px] tracking-wide mt-3 disabled:opacity-70 disabled:cursor-not-allowed"
-      >
-        {loading ? 'Se trimite...' : 'Trimite mesaj'}
-      </button>
+      {existingChatId ? (
+        <button 
+          type="button"
+          onClick={() => router.push(`/Profil/messages?chatId=${existingChatId}`)}
+          className="w-full bg-[#f25c1d]/10 hover:bg-[#f25c1d]/20 text-[#f25c1d] border border-[#f25c1d]/30 py-4 font-bold rounded-xl transition-all text-[16px] tracking-wide mt-3"
+        >
+          Mergi la conversație
+        </button>
+      ) : (
+        <button 
+          type="submit" 
+          disabled={loading}
+          className="w-full bg-[#f25c1d] hover:bg-[#eb5211] text-white py-4 font-bold rounded-xl transition-all shadow-[0_4px_14px_rgba(242,92,29,0.3)] hover:shadow-[0_6px_20px_rgba(242,92,29,0.4)] hover:-translate-y-0.5 text-[16px] tracking-wide mt-3 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {loading ? 'Se trimite...' : 'Trimite mesaj'}
+        </button>
+      )}
     </form>
   );
 }

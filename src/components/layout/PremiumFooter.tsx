@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { MessageCircle, Hash, Camera, Briefcase, Video, ArrowRight, Mail, Phone, MapPin } from 'lucide-react';
+import Logo from '@/components/layout/Logo';
 
 export default function PremiumFooter() {
   const currentYear = new Date().getFullYear();
@@ -46,13 +47,8 @@ export default function PremiumFooter() {
           
           {/* Brand Column */}
           <div className="lg:col-span-4">
-            <Link href="/" className="flex items-center gap-2 mb-8 group">
-              <div className="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center rotate-3 group-hover:rotate-0 transition-transform duration-500 shadow-xl shadow-emerald-500/10">
-                <span className="text-white font-black text-2xl">I</span>
-              </div>
-              <span className="text-3xl font-black tracking-tighter text-white">
-                IMOB<span className="text-emerald-500">.</span>
-              </span>
+            <Link href="/" className="flex items-center mb-8">
+              <Logo size="lg" dark={true} />
             </Link>
             <p className="text-lg leading-relaxed text-gray-500 mb-10 max-w-sm">
               Redefiniendo la experiencia inmobiliaria con tecnología y elegancia. Encuentra el lugar que siempre soñaste.
@@ -109,7 +105,7 @@ export default function PremiumFooter() {
                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-emerald-500">
                     <Mail size={16} />
                  </div>
-                 contact@imob.ro
+                 contact@xmobe.ro
                </div>
                <div className="flex items-center gap-3 text-sm">
                  <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-emerald-500">
@@ -124,7 +120,7 @@ export default function PremiumFooter() {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/5 flex flex-col md:row items-center justify-between gap-6 text-xs font-medium uppercase tracking-widest">
-          <p>© {currentYear} IMOB. Todos los derechos reservados.</p>
+          <p>© {currentYear} Xmobe. Todos los derechos reservados.</p>
           <div className="flex gap-8">
             <Link href="#" className="hover:text-white transition-colors">Sitemap</Link>
             <Link href="#" className="hover:text-white transition-colors">Seguridad</Link>

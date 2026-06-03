@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useDomain } from '@/context/DomainContext';
 import AutoSearchBar from './AutoSearchBar';
+import ClassicAutoSearch from './ClassicAutoSearch';
 import { useRouter } from 'next/navigation';
 import { Search, Heart, Building2, Building, Home, Map, Briefcase, Store, Factory, Hotel, MapPin, Bed, ChevronDown, Check, Warehouse, Car } from 'lucide-react';
 import { ROMANIA_LOCATIONS } from '@/constants/romaniaCities';
@@ -262,7 +263,7 @@ export default function Hero() {
 
         {/* Search Interactive Element */}
         {domain === 'auto' ? (
-          <AutoSearchBar />
+          searchMode === 'classic' ? <ClassicAutoSearch /> : <AutoSearchBar />
         ) : searchMode === 'classic' ? (
           <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row shadow-2xl rounded-xl overflow-hidden backdrop-blur-2xl bg-black/25 border border-white/10 pointer-events-auto">
           
@@ -580,13 +581,6 @@ export default function Hero() {
       {/* Under-Wave Secondary Menu */}
       <div className="absolute bottom-0 left-0 w-full bg-white z-30 pb-4 pt-2 px-6">
         <div className="container mx-auto flex flex-wrap justify-center gap-6 md:gap-12 text-sm text-gray-500 font-medium">
-          {domain === 'auto' ? (
-            <button className="flex items-center gap-2 hover:text-[var(--primary)] transition-colors">
-              <Heart size={16} /> Căutările mele Auto
-            </button>
-          ) : (
-            <>
-
           <button 
             onClick={() => {
               setSearchMode('classic');
@@ -609,10 +603,8 @@ export default function Hero() {
             Căutare profesională
           </button>
           <button className="flex items-center gap-2 hover:text-[var(--primary)] transition-colors">
-            <Heart size={16} /> Căutările mele
+            <Heart size={16} /> {domain === 'auto' ? 'Căutările mele Auto' : 'Căutările mele'}
           </button>
-          </>
-          )}
         </div>
       </div>
 

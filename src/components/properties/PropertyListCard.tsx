@@ -21,7 +21,7 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
     const savedStyle = localStorage.getItem('propertyCardStyle') as 'classic' | 'professional';
     if (savedStyle) setStyle(savedStyle);
 
-    const savedLogo = localStorage.getItem('imoob_user_logo');
+    const savedLogo = localStorage.getItem('xmobe_user_logo');
     if (savedLogo) setLogo(savedLogo);
 
     // Listen for changes across the app
@@ -48,11 +48,25 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
     maximumFractionDigits: 0,
   }).format(property.price);
 
+  let isNew = false;
+  if (property.createdAt) {
+    let dateObj;
+    if (typeof property.createdAt === 'object' && 'seconds' in property.createdAt) {
+      dateObj = new Date((property.createdAt as any).seconds * 1000);
+    } else if (typeof property.createdAt === 'number') {
+      dateObj = new Date(property.createdAt);
+    } else {
+      dateObj = new Date(property.createdAt);
+    }
+    
+    if (!isNaN(dateObj.getTime())) {
+      isNew = (Date.now() - dateObj.getTime()) < 2 * 24 * 60 * 60 * 1000;
+    }
+  }
+
   if (style === 'classic') {
     return (
-      <div className={`group block bg-white border border-slate-100/50 p-2 rounded-[28px] overflow-hidden transition-all duration-500 relative hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)] ${
-        property.promoType === 'gold' ? 'border-2 border-amber-400/50' : ''
-      }`}>
+      <div className="group block bg-white border border-slate-100/50 p-2 rounded-[28px] overflow-hidden transition-all duration-500 relative hover:border-slate-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.03)]">
         <Link href={`/propiedades/${property.slug}`} className="block relative h-64 w-full rounded-[24px] overflow-hidden mb-4">
           <Image
             src={property.images[0]}
@@ -62,7 +76,12 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           {/* Agency Logo (Minimalist) */}
-          <div className="absolute top-4 right-4 z-20">
+          <div className="absolute top-4 right-4 z-20 flex flex-col items-end gap-2">
+            {isNew && (
+              <div className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white text-[10px] font-bold py-1 px-3 rounded-lg shadow-sm w-fit">
+                Nou
+              </div>
+            )}
             <div className="bg-white/95 backdrop-blur-md p-1.5 rounded-lg shadow-md border border-white/50 flex items-center justify-center w-14 h-7 overflow-hidden">
               <Image 
                 src={logo || "https://www.panter.ro/img/logo-dark.png"}
@@ -75,15 +94,10 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
               />
             </div>
           </div>
-          {property.promoType && (
-            <div className="absolute top-4 left-4 bg-white text-black px-3 py-1 text-[10px] font-black uppercase tracking-widest shadow-md rounded-md">
-              Promovat
-            </div>
-          )}
-        </div>
+        </Link>
         <div className="px-2">
           <div className="flex justify-between items-baseline mb-1">
-            <div className="text-[24px] font-black text-gray-900 tracking-tight">{formattedPrice}</div>
+            <div className="text-[24px] font-black text-gray-900 tracking-tight">{formattedPrice}{property.status === 'for-rent' && <span className="text-[14px] text-gray-500 font-bold ml-1">/ lună</span>}</div>
             <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest bg-slate-50 border border-slate-100 px-2 py-1 rounded-md">{property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}</span>
           </div>
           <Link href={`/propiedades/${property.slug}`}>
@@ -107,13 +121,7 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
   return (
     <Link 
       href={`/propiedades/${property.slug}`}
-      className={`group block bg-white rounded-[24px] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.08)] overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 relative border ${
-        property.promoType === 'gold' 
-          ? 'border-amber-400/50 shadow-[0_10px_35px_-12px_rgba(251,191,36,0.2)]'
-          : property.promoType === 'standard'
-          ? 'border-[#139E69]/20 shadow-sm'
-          : 'border-transparent hover:border-gray-200'
-      }`}
+      className="group block bg-white rounded-[24px] shadow-[0_4px_25px_-5px_rgba(0,0,0,0.08)] overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1 relative border border-transparent hover:border-gray-200"
     >
       {/* Image Container */}
       <div className="relative aspect-[4/3] w-full overflow-hidden">
@@ -126,25 +134,17 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
         />
         
         {/* Status Badge */}
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
           <span className="bg-white/90 backdrop-blur-sm text-[#139E69] px-3 py-1 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm w-fit border border-white/50">
             {property.status === 'for-sale' ? 'De Vânzare' : 'Închiriere'}
           </span>
+          {isNew && (
+            <span className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white px-3 py-1 text-[10px] font-bold rounded-lg shadow-sm w-fit">
+              Nou
+            </span>
+          )}
         </div>
 
-        {/* Promotion Badges */}
-        <div className="absolute bottom-4 left-4 flex flex-col gap-2 z-10">
-          {property.promoType === 'gold' && (
-            <span className="bg-[#f25c1a]/15 backdrop-blur-md text-[#f25c1a] px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#f25c1a]/30">
-              <Crown size={12} fill="currentColor" className="text-[#f25c1a]" /> PROMOVAT
-            </span>
-          )}
-          {property.promoType === 'standard' && (
-            <span className="bg-[#139E69]/15 backdrop-blur-md text-[#139E69] px-3 py-1.5 font-black text-[10px] uppercase tracking-widest rounded-lg shadow-sm flex items-center gap-1.5 w-fit border border-[#139E69]/30">
-              <Sparkles size={12} fill="currentColor" className="text-[#139E69]" /> PROMOVAT
-            </span>
-          )}
-        </div>
       </div>
 
       {/* Content */}
@@ -164,8 +164,9 @@ export default function PropertyListCard({ property }: PropertyListCardProps) {
           </div>
         </div>
         <div className="flex justify-between items-start">
-          <h3 className="text-[22px] font-black text-[#139E69] tracking-tight">
+          <h3 className="text-[22px] font-black text-[#139E69] tracking-tight flex items-baseline">
             {formattedPrice}
+            {property.status === 'for-rent' && <span className="text-[13px] text-gray-500 font-bold ml-1.5">/ lună</span>}
           </h3>
           <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest bg-gray-50 px-2 py-1 rounded-md">{property.type}</span>
         </div>

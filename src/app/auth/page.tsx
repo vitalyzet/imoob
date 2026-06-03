@@ -8,6 +8,7 @@ import { auth, db } from '@/lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Logo from '@/components/layout/Logo';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -37,12 +38,20 @@ export default function AuthPage() {
       } else {
         const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
         if (userCredential.user) {
-          if (formData.name) {
-            await updateProfile(userCredential.user, { displayName: formData.name });
+          let formattedName = formData.name || '';
+          if (formattedName) {
+            const parts = formattedName.trim().split(' ');
+            if (parts.length > 1) {
+              const lastName = parts.pop();
+              if (lastName) {
+                formattedName = `${parts.join(' ')} ${lastName[0].toUpperCase()}.`;
+              }
+            }
+            await updateProfile(userCredential.user, { displayName: formattedName });
           }
           // Crear documento inicial del usuario en Firestore
           await setDoc(doc(db, 'users', userCredential.user.uid), {
-            name: formData.name || '',
+            name: formattedName,
             email: formData.email,
             phone: '',
             walletBalance: 0,
@@ -97,8 +106,8 @@ export default function AuthPage() {
           <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
           
           <div className="relative z-10">
-            <Link href="/" className="text-4xl font-serif font-black tracking-tighter text-white inline-block">
-              IMOOB<span className="text-[#f25c1a]">.</span>
+            <Link href="/" className="inline-block">
+              <Logo size="lg" dark={true} />
             </Link>
             <div className="mt-12 space-y-6">
                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="flex gap-4">
@@ -119,7 +128,7 @@ export default function AuthPage() {
           </div>
 
           <div className="relative z-10 mt-12 bg-white/10 p-6 rounded-2xl border border-white/20 backdrop-blur-sm">
-             <p className="text-sm font-medium leading-relaxed italic text-emerald-50">"IMOOB me permitió vender mi casa en 2 semanas sin comisiones abusivas. Una tecnología impecable."</p>
+             <p className="text-sm font-medium leading-relaxed italic text-emerald-50">"Xmobe me permitió vender mi casa en 2 semanas sin comisiones abusivas. Una tecnología impecable."</p>
              <div className="mt-4 flex items-center gap-3">
                <div className="w-8 h-8 rounded-full bg-emerald-800 border-2 border-white/50 overflow-hidden">
                  {/* eslint-disable-next-line @next/next/no-img-element */}

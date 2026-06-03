@@ -12,7 +12,13 @@ import { useRouter } from 'next/navigation';
 export default function MyAdsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [activeSubTab, setActiveSubTab] = useState('pending'); // Fallback to pending since new ads are pending
+  const [activeSubTab, setActiveSubTab] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('tab') || 'active';
+    }
+    return 'active';
+  });
   const [adsState, setAdsState] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [promotingId, setPromotingId] = useState<string | null>(null);
@@ -20,6 +26,7 @@ export default function MyAdsPage() {
   const [showFundsAlert, setShowFundsAlert] = useState(false);
   const [walletBalance, setWalletBalance] = useState<number>(0);
   const [userProfilePhone, setUserProfilePhone] = useState('');
+  const [userProfileCity, setUserProfileCity] = useState('');
   const [promoDuration, setPromoDuration] = useState<'15' | '30'>('15');
   const [expandedStats, setExpandedStats] = useState<Record<string, boolean>>({});
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
@@ -30,6 +37,8 @@ export default function MyAdsPage() {
     price: '',
     description: '',
     phone: '',
+    city: '',
+    transmisie: '',
     rulaj: '',
     an: '',
     rooms: '',
@@ -44,6 +53,8 @@ export default function MyAdsPage() {
       price: ad.price ? String(ad.price) : '',
       description: ad.description || '',
       phone: ad.phone || userProfilePhone || '',
+      city: ad.city || ad.location || userProfileCity || '',
+      transmisie: ad.transmisie || ad.transmission || '',
       rulaj: ad.rulaj ? String(ad.rulaj) : '',
       an: ad.an ? String(ad.an) : '',
       rooms: ad.rooms ? String(ad.rooms) : (ad.features?.bedrooms ? String(ad.features.bedrooms) : ''),
@@ -90,15 +101,27 @@ export default function MyAdsPage() {
       const col = editingAd._collection || 'anuncios';
       const docRef = doc(db, col, editingAd.id);
 
-      const newPrice = Number(editFormData.price);
-      const currentPrice = Number(editingAd.price);
+      const newPrice = Number(String(editFormData.price).replace(/[.,\s]/g, ''));
+      const currentPrice = Number(String(editingAd.price).replace(/[.,\s]/g, ''));
 
       const updateData: any = {
         price: newPrice,
         description: editFormData.description,
         phone: editFormData.phone,
+        city: editFormData.city,
         lastEdited: new Date()
       };
+
+      // Generate slug if it doesn't exist for older ads
+      if (!editingAd.slug) {
+        if (col === 'anuncios_auto') {
+          const baseSlug = `${editingAd.marca || ''}-${editingAd.model || ''}-${editingAd.city || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+          updateData.slug = baseSlug ? `${baseSlug}-${Math.random().toString(36).substring(2, 8)}` : `auto-${Date.now()}`;
+        } else {
+          const baseSlug = `${editingAd.type || ''}-${editingAd.rooms ? editingAd.rooms + '-camere-' : ''}${editingAd.localitate || editingAd.city || ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+          updateData.slug = baseSlug ? `${baseSlug}-${Math.random().toString(36).substring(2, 8)}` : `prop-${Date.now()}`;
+        }
+      }
 
       // Check if price decreased to register the discount
       if (currentPrice && newPrice < currentPrice) {
@@ -114,6 +137,7 @@ export default function MyAdsPage() {
       if (col === 'anuncios_auto') {
         if (editFormData.rulaj) updateData.rulaj = Number(editFormData.rulaj);
         if (editFormData.an) updateData.an = Number(editFormData.an);
+        if (editFormData.transmisie) updateData.transmisie = editFormData.transmisie;
       } else {
         if (editFormData.rooms) updateData.rooms = Number(editFormData.rooms);
         if (editFormData.surface) {
@@ -189,6 +213,7 @@ export default function MyAdsPage() {
         const data = snapshot.data();
         setWalletBalance(data.walletBalance || 0);
         setUserProfilePhone(data.phone || '');
+        setUserProfileCity(data.location || data.city || '');
         console.log("[MyAds] Real-time balance and profile update");
       }
     });
@@ -262,6 +287,22 @@ export default function MyAdsPage() {
     }
   };
 
+  const handleReactivateAd = async (ad: any) => {
+    if (!confirm('Ești sigur că vrei să reactivezi acest anunț pentru încă 30 de zile?')) return;
+    try {
+      const col = ad._collection || 'anuncios';
+      await updateDoc(doc(db, col, ad.id), {
+        status: 'active',
+        createdAt: new Date(),
+        lastEdited: new Date()
+      });
+      // La lista se actualizará automáticamente gracias a onSnapshot
+    } catch (error) {
+      console.error('Error reactivating ad:', error);
+      alert('Eroare la reactivarea anunțului.');
+    }
+  };
+
   const handleDeleteAd = async (adId: string) => {
     if (!confirm('Ești sigur că vrei să ștergi acest anunț? Această acțiune este ireversibilă.')) return;
     
@@ -279,16 +320,27 @@ export default function MyAdsPage() {
     }
   };
 
+  const isAdExpired = (ad: any) => {
+    if (ad.status === 'expired' || ad.status === 'inactive') return true;
+    if (ad.createdAt) {
+      const created = ad.createdAt.toDate ? ad.createdAt.toDate() : new Date(ad.createdAt);
+      const expiry = new Date(created);
+      expiry.setDate(expiry.getDate() + 30);
+      return new Date() > expiry;
+    }
+    return false;
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Status Sub-Navigation */}
       <div className="flex flex-wrap gap-2 pb-2 border-b border-gray-100">
         {[
-          { id: 'active', label: 'Active', count: adsState.filter(a => a.status === 'active').length, color: 'bg-green-500' },
-          { id: 'promovate', label: 'Promovate', count: adsState.filter(a => a.isPromoted && a.status === 'active').length, color: 'bg-[#f25c1a]' },
+          { id: 'active', label: 'Active', count: adsState.filter(a => a.status === 'active' && !isAdExpired(a)).length, color: 'bg-green-500' },
+          { id: 'promovate', label: 'Promovate', count: adsState.filter(a => a.isPromoted && a.status === 'active' && !isAdExpired(a)).length, color: 'bg-[#f25c1a]' },
           { id: 'pending', label: 'În așteptare', count: adsState.filter(a => a.status === 'pending').length, color: 'bg-yellow-500' },
           { id: 'rejected', label: 'Respinse', count: adsState.filter(a => a.status === 'rejected').length, color: 'bg-red-500' },
-          { id: 'expired', label: 'Expirate', count: adsState.filter(a => a.status === 'expired').length, color: 'bg-gray-400' },
+          { id: 'expired', label: 'Expirate', count: adsState.filter(a => isAdExpired(a)).length, color: 'bg-gray-400' },
         ].map((subTab) => (
           <button
             key={subTab.id}
@@ -343,7 +395,7 @@ export default function MyAdsPage() {
               În moderare
             </div>
             <span className="text-[12px] font-bold text-gray-500 tracking-tight">
-              Anunțul tău este verificat de echipa <span className="text-gray-900">IMOOB</span> și va fi <span className="text-gray-900">activat în cel mult 24 de ore</span>.
+              Anunțul tău este verificat de echipa <span className="text-gray-900">Xmobe</span> și va fi <span className="text-gray-900">activat în cel mult 24 de ore</span>.
             </span>
           </div>
         </div>
@@ -352,7 +404,10 @@ export default function MyAdsPage() {
       {/* Ads List Filtered by Status */}
       <div className="flex flex-col gap-5">
         {adsState.filter(ad => 
-          activeSubTab === 'promovate' ? (ad.isPromoted && ad.status === 'active') : ad.status === activeSubTab
+          activeSubTab === 'promovate' ? (ad.isPromoted && ad.status === 'active' && !isAdExpired(ad)) : 
+          activeSubTab === 'expired' ? isAdExpired(ad) : 
+          activeSubTab === 'active' ? (ad.status === 'active' && !isAdExpired(ad)) :
+          ad.status === activeSubTab
         ).map((ad) => {
           const isAuto = ad._collection === 'anuncios_auto';
           return (
@@ -371,11 +426,12 @@ export default function MyAdsPage() {
               <img src={ad.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=600&h=400&q=80'} alt="Ad Image" className="w-full h-full object-cover" />
               <div className="absolute top-3 left-3 flex flex-col gap-1.5">
                 <span className={`px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest text-white shadow-lg backdrop-blur-md ${
+                  isAdExpired(ad) ? 'bg-gray-500/90' :
                   ad.status === 'active' ? 'bg-green-500/90' : 
                   ad.status === 'pending' ? 'bg-amber-500/90' : 
                   ad.status === 'rejected' ? 'bg-red-500/90' : 'bg-gray-500/90'
                 }`}>
-                  {ad.status === 'active' ? 'Activ' : ad.status === 'pending' ? 'În așteptare' : ad.status === 'rejected' ? 'Respins' : 'Expirat'}
+                  {isAdExpired(ad) ? 'Expirat' : ad.status === 'active' ? 'Activ' : ad.status === 'pending' ? 'În așteptare' : ad.status === 'rejected' ? 'Respins' : 'Expirat'}
                 </span>
                 {ad.isPromoted && (
                   <span className={`${ad.promoType === 'gold' ? 'bg-gradient-to-r from-amber-400 to-amber-600 shadow-amber-500/30' : 'bg-[#f25c1a]/90 shadow-orange-500/30'} backdrop-blur-md text-white px-2.5 py-1 rounded-md text-[9px] font-black uppercase tracking-widest flex items-center gap-1 shadow-lg`}>
@@ -535,8 +591,11 @@ export default function MyAdsPage() {
                       {promotingId === ad.id ? 'Se activează' : 'Boost Anunț'}
                     </button>
                   )}
-                  {ad.status === 'expired' && (
-                    <button className="text-[#f25c1a] hover:bg-[#f25c1a] hover:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 border border-orange-200/50 shadow-sm">
+                  {isAdExpired(ad) && (
+                    <button 
+                      onClick={() => handleReactivateAd(ad)}
+                      className="text-[#f25c1a] hover:bg-[#f25c1a] hover:text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 border border-orange-200/50 shadow-sm"
+                    >
                       <RefreshCcw size={14} /> Reactivare
                     </button>
                   )}
@@ -564,7 +623,12 @@ export default function MyAdsPage() {
           );
         })}
 
-        {adsState.filter(ad => activeSubTab === 'promovate' ? (ad.isPromoted && ad.status === 'active') : ad.status === activeSubTab).length === 0 && (
+        {adsState.filter(ad => 
+          activeSubTab === 'promovate' ? (ad.isPromoted && ad.status === 'active' && !isAdExpired(ad)) : 
+          activeSubTab === 'expired' ? isAdExpired(ad) : 
+          activeSubTab === 'active' ? (ad.status === 'active' && !isAdExpired(ad)) :
+          ad.status === activeSubTab
+        ).length === 0 && (
           <div className="bg-white rounded-[40px] p-24 border border-dashed border-gray-200 flex flex-col items-center justify-center text-center">
             <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-8">
               <List size={32} strokeWidth={1} className="text-gray-300" />
@@ -761,9 +825,42 @@ export default function MyAdsPage() {
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Oraș / Locație</label>
+                      <div className="relative">
+                        <MapPin size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input 
+                          type="text" 
+                          list="romania-cities-datalist"
+                          disabled={isLocked}
+                          value={editFormData.city}
+                          onChange={e => setEditFormData(prev => ({ ...prev, city: e.target.value }))}
+                          className="w-full bg-gray-50 disabled:bg-gray-100 border border-gray-200/60 rounded-xl pl-10 pr-4 py-3 text-sm font-bold text-gray-900 focus:outline-none focus:border-amber-400 focus:bg-white transition-colors"
+                          placeholder="Ex: București"
+                        />
+                        <datalist id="romania-cities-datalist">
+                          <option value="București" /><option value="Cluj-Napoca" /><option value="Timișoara" />
+                          <option value="Iași" /><option value="Constanța" /><option value="Craiova" />
+                          <option value="Brașov" /><option value="Galați" /><option value="Ploiești" />
+                          <option value="Oradea" /><option value="Brăila" /><option value="Arad" />
+                          <option value="Pitești" /><option value="Sibiu" /><option value="Bacău" />
+                          <option value="Târgu Mureș" /><option value="Baia Mare" /><option value="Buzău" />
+                          <option value="Botoșani" /><option value="Satu Mare" /><option value="Râmnicu Vâlcea" />
+                          <option value="Suceava" /><option value="Drobeta-Turnu Severin" /><option value="Târgoviște" />
+                          <option value="Târgu Jiu" /><option value="Tulcea" /><option value="Bistrița" />
+                          <option value="Reșița" /><option value="Slatina" /><option value="Călărași" />
+                          <option value="Alba Iulia" /><option value="Giurgiu" /><option value="Deva" />
+                          <option value="Focșani" /><option value="Zalău" /><option value="Sfântu Gheorghe" />
+                        </datalist>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Conditional Auto Fields */}
                   {isAuto && (
-                    <div className="grid grid-cols-2 gap-4">
+                    <>
+                      <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Kilometraj (km)</label>
                         <div className="relative">
@@ -801,6 +898,25 @@ export default function MyAdsPage() {
                         </div>
                       </div>
                     </div>
+                    
+                    <div className="mt-4">
+                      <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-1.5">Transmisie</label>
+                      <div className="flex gap-2">
+                        {['Manuală', 'Automată'].map(t => (
+                          <button
+                            key={t}
+                            disabled={isLocked}
+                            onClick={() => setEditFormData(prev => ({ ...prev, transmisie: t }))}
+                            className={`flex-1 py-3 text-[13px] font-bold rounded-xl transition-all border ${
+                              editFormData.transmisie === t ? 'bg-sky-500 text-white border-sky-500' : 'bg-gray-50 text-gray-600 border-gray-200/60 disabled:bg-gray-100'
+                            }`}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    </>
                   )}
 
                   {/* Conditional Real Estate Fields */}
@@ -905,7 +1021,7 @@ export default function MyAdsPage() {
                   </button>
                   <button 
                     onClick={handleSaveEdit}
-                    disabled={isLocked || isSavingEdit || !editFormData.price || !editFormData.description || !editFormData.phone}
+                    disabled={isLocked || isSavingEdit || !editFormData.price}
                     className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-[2px] px-8 py-3.5 rounded-xl transition-all shadow-lg shadow-orange-500/10 hover:shadow-orange-500/25 active:scale-95 disabled:opacity-50 disabled:pointer-events-none flex items-center gap-2"
                   >
                     {isSavingEdit ? (

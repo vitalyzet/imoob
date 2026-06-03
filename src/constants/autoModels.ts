@@ -14,7 +14,7 @@ export const AUTO_BRANDS = [
   "Nissan","Omoda","Opel","Peugeot","PGO Scooters","Piaggio","Polaris",
   "Polestar","Pontiac","Porsche","Renault","Rolls-Royce","Rover","Saab",
   "Seat","Skoda","Smart","SsangYong","Subaru","Suzuki","Tesla",
-  "Toyota","Volkswagen","Volvo"
+  "Toyota","Volkswagen","Volvo","Altele"
 ];
 
 export const AUTO_MODELS: Record<string, string[]> = {
@@ -57,4 +57,94 @@ export const AUTO_MODELS: Record<string, string[]> = {
   "Toyota": ["Yaris","Yaris Cross","Corolla","Camry","C-HR","RAV4","Highlander","Land Cruiser","Supra","GR86","Prius","Proace","Hilux","Aygo","Avensis","Auris","bZ4X"],
   "Volkswagen": ["Polo","Golf","Passat","Arteon","Tiguan","T-Roc","T-Cross","Touareg","Taigo","ID.3","ID.4","ID.5","ID.7","ID. Buzz","Caddy","Transporter","Jetta","Scirocco","Touran","Sharan","Up!","Beetle"],
   "Volvo": ["XC40","XC60","XC90","S60","S90","V40","V60","V90","C40","EX30","EX90"],
+  "Altele": ["Altele"]
+};
+
+export const MOTO_BRANDS = [
+  "Aprilia", "BMW", "Ducati", "Harley-Davidson", "Honda", "Kawasaki", "KTM", "Suzuki", "Triumph", "Yamaha",
+  "Vespa", "Piaggio", "Husqvarna", "Indian", "Royal Enfield", "Altele"
+];
+
+export const MOTO_MODELS: Record<string, string[]> = {
+  "Aprilia": ["RSV4", "Tuono", "RS 660", "Tuareg 660", "SRV 850"],
+  "BMW": ["S 1000 RR", "R 1250 GS", "F 850 GS", "R nineT", "K 1600"],
+  "Ducati": ["Panigale V4", "Multistrada V4", "Monster", "Diavel", "Scrambler"],
+  "Harley-Davidson": ["Sportster S", "Fat Boy", "Pan America", "Street Glide", "Iron 883"],
+  "Honda": ["CBR1000RR", "Africa Twin", "CB650R", "NC750X", "Rebel 500", "Gold Wing"],
+  "Kawasaki": ["Ninja ZX-10R", "Z900", "Versys 1000", "Vulcan S", "Ninja H2"],
+  "KTM": ["1290 Super Duke R", "390 Duke", "890 Adventure", "1290 Super Adventure R", "RC 390"],
+  "Suzuki": ["Hayabusa", "GSX-R1000", "V-Strom 1050", "SV650", "Katana"],
+  "Triumph": ["Street Triple", "Speed Triple", "Tiger 900", "Bonneville T120", "Rocket 3"],
+  "Yamaha": ["YZF-R1", "MT-09", "Tracer 9", "Tenere 700", "TMAX"],
+  "Vespa": ["Primavera", "GTS", "Sprint", "Elettrica"],
+  "Piaggio": ["Beverly", "Liberty", "Medley", "MP3"],
+  "Husqvarna": ["Vitpilen", "Svartpilen", "Norden 901", "701 Supermoto"],
+  "Indian": ["Scout", "Chief", "Chieftain", "FTR 1200"],
+  "Royal Enfield": ["Interceptor 650", "Classic 350", "Himalayan", "Continental GT 650"],
+  "Altele": ["Altele"]
+};
+
+export const VAN_BRANDS = [
+  "Citroën", "DAF", "Fiat", "Ford", "Isuzu", "Iveco", "MAN", 
+  "Mercedes-Benz", "Nissan", "Opel", "Peugeot", "Renault", 
+  "Scania", "Toyota", "Volkswagen", "Volvo"
+];
+
+export const VAN_MODELS: Record<string, string[]> = {
+  "Citroën": ["Berlingo", "Jumper", "Jumpy"],
+  "DAF": ["XF", "CF", "LF"],
+  "Fiat": ["Doblo", "Ducato", "Fiorino", "Scudo", "Talento"],
+  "Ford": ["Transit", "Transit Custom", "Transit Connect", "Transit Courier", "Ranger"],
+  "Isuzu": ["D-Max", "N-Series"],
+  "Iveco": ["Daily", "Eurocargo", "Stralis"],
+  "MAN": ["TGE", "TGX", "TGS", "TGM", "TGL"],
+  "Mercedes-Benz": ["Sprinter", "Vito", "Citan", "Actros", "Atego"],
+  "Nissan": ["Navara", "NV200", "NV300", "NV400", "Interstar", "Primastar"],
+  "Opel": ["Combo", "Movano", "Vivaro"],
+  "Peugeot": ["Boxer", "Expert", "Partner"],
+  "Renault": ["Kangoo", "Master", "Trafic"],
+  "Scania": ["R-Series", "S-Series", "G-Series", "P-Series"],
+  "Toyota": ["Hilux", "Proace", "Proace City"],
+  "Volkswagen": ["Caddy", "Crafter", "Transporter", "Amarok"],
+  "Volvo": ["FH", "FM", "FMX", "FL", "FE"]
+};
+
+export const TRUCK_BRANDS = [
+  "DAF", "Ford", "Isuzu", "Iveco", "MAN", "Mercedes-Benz", "Renault", "Scania", "Volvo", "Altele"
+];
+
+export const TRUCK_MODELS: Record<string, string[]> = {
+  "DAF": ["XF", "CF", "LF", "XG", "XG+"],
+  "Ford": ["F-Max", "Cargo"],
+  "Isuzu": ["N-Series", "F-Series"],
+  "Iveco": ["Stralis", "S-Way", "X-Way", "Eurocargo", "Trakker"],
+  "MAN": ["TGX", "TGS", "TGM", "TGL"],
+  "Mercedes-Benz": ["Actros", "Arocs", "Atego", "Econic"],
+  "Renault": ["T", "K", "C", "D"],
+  "Scania": ["S-Series", "R-Series", "G-Series", "P-Series", "L-Series"],
+  "Volvo": ["FH", "FH16", "FM", "FMX", "FE", "FL"],
+  "Altele": ["Altele"]
+};
+
+export const AGRI_BRANDS = [
+  "Bobcat", "Case IH", "Caterpillar", "CLAAS", "Deutz-Fahr", 
+  "Fendt", "JCB", "John Deere", "Komatsu", "Kubota", 
+  "Massey Ferguson", "New Holland", "Valtra", "Altele"
+];
+
+export const AGRI_MODELS: Record<string, string[]> = {
+  "Bobcat": ["S-Series", "T-Series", "E-Series"],
+  "Case IH": ["Puma", "Optum", "Magnum", "Steiger", "Farmall"],
+  "Caterpillar": ["Excavator", "Bulldozer", "Loader", "Grader"],
+  "CLAAS": ["Lexion", "Axion", "Arion", "Xerion", "Jaguar"],
+  "Deutz-Fahr": ["Series 9", "Series 8", "Series 7", "Series 6", "Series 5"],
+  "Fendt": ["1000 Vario", "900 Vario", "800 Vario", "700 Vario", "300 Vario"],
+  "JCB": ["Fastrac", "Telehandler", "Backhoe Loader", "Excavator"],
+  "John Deere": ["Series 9", "Series 8", "Series 7", "Series 6", "Series 5"],
+  "Komatsu": ["Excavator", "Bulldozer", "Wheel Loader", "Dump Truck"],
+  "Kubota": ["M7", "M6", "M5", "L-Series", "B-Series"],
+  "Massey Ferguson": ["MF 8S", "MF 7S", "MF 6S", "MF 5S", "MF 4700"],
+  "New Holland": ["T9", "T8", "T7", "T6", "T5", "CR Revelation", "CX"],
+  "Valtra": ["S Series", "Q Series", "T Series", "N Series", "A Series"],
+  "Altele": ["Altele"]
 };

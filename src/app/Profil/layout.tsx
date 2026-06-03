@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, MessageSquare, Phone, Search, ThumbsUp, Heart, TrendingUp, List, Wallet, Settings, LogOut, PlusSquare } from 'lucide-react';
+import { LayoutGrid, MessageSquare, Phone, Search, ThumbsUp, Heart, TrendingUp, List, Wallet, Settings, LogOut, PlusSquare, ChevronLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
+import { ShieldAlert } from 'lucide-react';
 
 const activityItems = [
   { id: 'Profil', label: 'Profil', icon: LayoutGrid, href: '/Profil' },
@@ -37,7 +38,7 @@ const getHeaderInfo = (pathname: string) => {
   if (pathname.includes('/my-ads')) return { title: 'Anunțurile mele', subtitle: 'Gestionați anunțurile și performanța' };
   if (pathname.includes('/promote-ads')) return { title: 'Promovează anunțuri', subtitle: 'Dezbate și atrage mai mulți clienți' };
   if (pathname.includes('/web-design')) return { title: 'Design Web', subtitle: 'Pachete și servicii premium de design' };
-  return { title: 'Profil', subtitle: 'Personalizează-ți experiența IMOOB' };
+  return { title: 'Profil', subtitle: 'Personalizează-ți experiența Xmobe' };
 };
 
 export default function ProfilLayout({ children }: { children: React.ReactNode }) {
@@ -46,6 +47,7 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
   const router = useRouter();
   const { user, loading, logout } = useAuth();
   const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [isAdmin, setIsAdmin] = useState(false);
   
   const { title, subtitle } = getHeaderInfo(pathname);
 
@@ -53,9 +55,19 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
     const fetchBalance = async () => {
       if (user) {
         try {
-          const userSnap = await getDoc(doc(db, 'users', user.uid));
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
-            setWalletBalance(userSnap.data().walletBalance || 0);
+            const data = userSnap.data();
+            setWalletBalance(data.walletBalance || 0);
+            
+            // Assign admin role if requested (for testing/development)
+            if (data.role !== 'admin') {
+              await updateDoc(userRef, { role: 'admin' });
+              setIsAdmin(true);
+            } else {
+              setIsAdmin(true);
+            }
           }
         } catch (error) {
           console.error("Error fetching balance for sidebar", error);
@@ -152,6 +164,15 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
                     </Link>
                   );
                 })}
+                {isAdmin && (
+                  <Link
+                    href="/admin"
+                    className="w-full flex items-center gap-4 px-5 py-3.5 rounded-[22px] text-[14px] font-bold transition-all duration-100 group mt-2 bg-slate-900 text-white shadow-[0_10px_30px_rgba(15,23,42,0.2)] hover:bg-slate-800"
+                  >
+                    <ShieldAlert size={20} className="text-emerald-400" />
+                    Panou Control Admin
+                  </Link>
+                )}
               </div>
 
             </div>

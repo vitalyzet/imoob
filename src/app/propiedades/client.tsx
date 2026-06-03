@@ -111,7 +111,18 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
     const q = query(collection(db, 'anuncios'), where('status', '==', 'active'));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const mapped = snapshot.docs.map(doc => {
+      const isAdExpired = (d: any) => {
+        if (d.status === 'expired' || d.status === 'inactive') return true;
+        if (d.createdAt) {
+          const created = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
+          const expiry = new Date(created);
+          expiry.setDate(expiry.getDate() + 30);
+          return new Date() > expiry;
+        }
+        return false;
+      };
+
+      const mapped = snapshot.docs.filter(doc => !isAdExpired(doc.data())).map(doc => {
         const d = doc.data();
         let status = (d.operation === 'vender' || d.operation === 'vanzare') ? 'for-sale' : 'for-rent';
         if (d.type === 'camera') {
@@ -253,6 +264,66 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
     });
   }, [initialProperties, filters, firebaseProperties]);
 
+  const typeCounts = useMemo(() => {
+    const baseProperties = firebaseProperties.length > 0 ? firebaseProperties : initialProperties;
+    const normalize = (str: string) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    
+    // Filter properties ignoring type
+    const baseFiltered = baseProperties.filter(property => {
+      if (filters.city) {
+        const sCity = normalize(filters.city);
+        if (sCity !== 'romania') {
+          const pCity = normalize(property.location.city);
+          const pState = normalize(property.location.state || '');
+          if (pCity !== sCity && pState !== sCity) return false;
+        }
+      }
+      if (property.price < filters.minPrice || property.price > filters.maxPrice) return false;
+      if (filters.bedrooms && property.features.bedrooms < filters.bedrooms) return false;
+      if (filters.isNewConstruction) {
+        if (!property.isNewConstruction) return false;
+      } else {
+        if (property.status !== filters.status) return false;
+        if (property.isNewConstruction) return false;
+      }
+      return true;
+    });
+
+    const counts: Record<string, number> = {};
+    
+    propertyTypes.forEach(typeObj => {
+      const sType = normalize(typeObj.value);
+      let count = 0;
+      
+      baseFiltered.forEach(property => {
+        const pType = normalize(property.type || '');
+        if (sType === 'locuinte' || sType === 'locuinta') {
+          const residentialTypes = ['apartament', 'apartment', 'casa', 'house', 'vila', 'villa', 'garsoniera', 'studio'];
+          const isResidential = residentialTypes.some(rt => pType.includes(rt));
+          if (isResidential) count++;
+        } else {
+          let cleanSType = sType
+            .replace(' / vile', '')
+            .replace(' / pensiuni', '')
+            .replace('spatii ', '')
+            .replace('spatiul ', '')
+            .replace('camera de inchiriat', 'camera')
+            .trim();
+          
+          const s1 = cleanSType.endsWith('e') ? cleanSType.slice(0, -1) : cleanSType;
+          const p1 = pType.endsWith('e') ? pType.slice(0, -1) : pType;
+
+          if (pType.includes(s1) || sType.includes(p1)) count++;
+        }
+      });
+      counts[typeObj.value] = count;
+    });
+    
+    counts['Toate tipurile'] = baseFiltered.length;
+    
+    return counts;
+  }, [initialProperties, filters, firebaseProperties]);
+
   const fullLocationName = useMemo(() => {
     if (!filters.city) return 'România';
     const loc = ROMANIA_LOCATIONS.find(l => l.name === filters.city);
@@ -286,7 +357,7 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
             </div>
             <div className="flex items-center gap-1.5 text-[13px] text-gray-500 pt-1 flex-wrap">
               <span className="font-medium text-gray-400">Ești în:</span>
-              <span className="text-gray-500">IMOB</span>
+              <span className="text-gray-500">Xmobe</span>
               <ChevronRight size={12} className="text-gray-300" />
               <span className="text-gray-500">{breadcrumbOperation}</span>
               <ChevronRight size={12} className="text-gray-300" />
@@ -370,8 +441,8 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
                     {showTypeDropdown && (
                       <div className="absolute z-50 w-full mt-2 bg-white border border-gray-100 rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.08)] overflow-hidden">
                         <ul className="max-h-[280px] overflow-y-auto py-2 custom-scrollbar">
-                          <li><button onClick={() => { setFilters({...filters, type: ''}); setShowTypeDropdown(false); }} className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center gap-3 ${filters.type === '' ? 'bg-[#139E69]/10 text-[#139E69] font-bold border-l-2 border-[#139E69]' : 'text-gray-700 hover:bg-gray-50'}`}><LayoutGrid size={18} />Toate tipurile</button></li>
-                          {propertyTypes.map((type) => (<li key={type.value}><button onClick={() => { setFilters({...filters, type: type.value}); setShowTypeDropdown(false); }} className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center gap-3 ${filters.type === type.value ? 'bg-[#139E69]/10 text-[#139E69] font-bold border-l-2 border-[#139E69]' : 'text-gray-700 hover:bg-gray-50'}`}>{getTypeIcon(type.value)}{type.label}</button></li>))}
+                          <li><button onClick={() => { setFilters({...filters, type: ''}); setShowTypeDropdown(false); }} className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center gap-3 ${filters.type === '' ? 'bg-[#139E69]/10 text-[#139E69] font-bold border-l-2 border-[#139E69]' : 'text-gray-700 hover:bg-gray-50'}`}><LayoutGrid size={18} /><span className="flex-1">Toate tipurile</span><span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{typeCounts['Toate tipurile']}</span></button></li>
+                          {propertyTypes.map((type) => (<li key={type.value}><button onClick={() => { setFilters({...filters, type: type.value}); setShowTypeDropdown(false); }} className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center gap-3 ${filters.type === type.value ? 'bg-[#139E69]/10 text-[#139E69] font-bold border-l-2 border-[#139E69]' : 'text-gray-700 hover:bg-gray-50'}`}>{getTypeIcon(type.value)}<span className="flex-1">{type.label}</span><span className="text-xs font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{typeCounts[type.value] || 0}</span></button></li>))}
                         </ul>
                       </div>
                     )}

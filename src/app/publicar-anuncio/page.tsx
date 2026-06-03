@@ -5,6 +5,7 @@ import { Building2, Car, ArrowRight, X, Sparkles, Shield, Eye } from 'lucide-rea
 import Link from 'next/link';
 import PropertyPublishForm from '@/components/properties/PropertyPublishForm';
 import AutoPublishForm from '@/components/properties/AutoPublishForm';
+import Logo from '@/components/layout/Logo';
 
 export default function PublicarAnuncio() {
   const [selectedDomain, setSelectedDomain] = useState<'imobiliare' | 'auto' | null>(null);
@@ -32,8 +33,8 @@ export default function PublicarAnuncio() {
       {/* Top Navbar */}
       <header className="relative z-10 bg-white/80 backdrop-blur-xl border-b border-gray-200/60">
         <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-black tracking-tighter text-black">
-            IMOB<span className="text-[#139E69]">.</span>
+          <Link href="/" className="flex items-center">
+            <Logo size="sm" />
           </Link>
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-2 text-[13px] text-gray-400 font-medium">

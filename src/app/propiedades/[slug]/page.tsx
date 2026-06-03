@@ -2,7 +2,7 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import { MapPin, Bed, Box, ShowerHead, UtensilsCrossed, Dumbbell, Bus, ShoppingBag, GraduationCap, Stethoscope, Utensils, Landmark, ParkingSquare, Building2, Bath, Square, Calendar, Check, Heart, Share2, Printer, ChevronRight, Layers3, Bell, Crown, Info, CheckCircle2, Sun, Phone, MessageCircle, Users, Home, Snowflake, Key, Dog, Zap, Eye, Flag } from 'lucide-react';
+import { MapPin, Bed, Box, ShowerHead, UtensilsCrossed, Dumbbell, Bus, ShoppingBag, GraduationCap, Stethoscope, Utensils, Landmark, ParkingSquare, Building2, Bath, Square, Calendar, Check, Heart, Share2, Printer, ChevronRight, Layers3, Bell, Crown, Info, CheckCircle2, Sun, Phone, MessageCircle, Users, Home, Snowflake, Key, Dog, Zap, Eye, Flag, Star } from 'lucide-react';
 import Link from 'next/link';
 import PropertyGallery from '@/components/properties/PropertyGallery';
 import ContactForm from '@/components/properties/ContactForm';
@@ -16,12 +16,29 @@ export const dynamic = 'force-dynamic';
 
 async function getPropertyData(slug: string) {
   try {
-    const docRef = doc(db, 'anuncios', slug);
-    const docSnap = await getDoc(docRef);
+    let docData: any = null;
+    let docId = '';
+
+    // First try by slug field
+    const q = query(collection(db, 'anuncios'), where('slug', '==', slug));
+    const qSnap = await getDocs(q);
     
-    if (!docSnap.exists()) return null;
-    
-    const d = docSnap.data();
+    if (!qSnap.empty) {
+      const fetchedDoc = qSnap.docs[0];
+      docData = fetchedDoc.data();
+      docId = fetchedDoc.id;
+    } else {
+      // Fallback to doc ID for old properties
+      const docRef = doc(db, 'anuncios', slug);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        docData = docSnap.data();
+        docId = docSnap.id;
+      }
+    }
+
+    if (!docData) return null;
+    const d = docData;
     
     let mappedType = d.type || 'apartment';
     let mappedOperation = d.operation === 'vender' || d.operation === 'vanzare' ? 'vanzare' : 'inchiriere';
@@ -38,9 +55,9 @@ async function getPropertyData(slug: string) {
     const generatedTitle = `${typeName} ${operationName} în ${d.localitate || d.city || 'România'}`;
     
     return {
-      id: docSnap.id,
+      id: docId,
       title: d.title || generatedTitle,
-      slug: docSnap.id,
+      slug: d.slug || docId,
       type: mappedType,
       price: Number(d.price) || 0,
       pretNegociabil: d.pretNegociabil || false,
@@ -121,7 +138,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!property) return { title: 'Proprietate negăsită' };
  
   return {
-    title: property.title + ' | IMOOB',
+    title: property.title + ' | Xmobe',
     description: property.description,
   };
 }
@@ -236,7 +253,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
         {/* Breadcrumbs & Top Actions */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 font-medium">
-            <Link href="/" className="hover:text-[#139E69] transition-colors">imoob</Link>
+            <Link href="/" className="hover:text-[#139E69] transition-colors">xmobe</Link>
             <ChevronRight size={14} className="text-gray-300" />
             <Link href="/propiedades" className="hover:text-[#139E69] transition-colors">Proprietăți</Link>
             <ChevronRight size={14} className="text-gray-300" />
@@ -287,7 +304,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
             <hr className="w-full border-t border-gray-200/80 mb-8" />
 
             <div className="mb-8">
-              <h2 className="text-[32px] font-black text-[#1a1a1a] tracking-tight">Precio {formattedPrice}</h2>
+              <h2 className="text-[32px] font-black text-[#1a1a1a] tracking-tight flex items-baseline gap-2">
+                {formattedPrice}
+                {property.status === 'for-rent' && <span className="text-[20px] font-bold text-gray-400">/ lună</span>}
+              </h2>
               {property.pretNegociabil && <p className="text-[14px] text-[#139E69] font-medium mt-1.5 flex items-center gap-1.5"><CheckCircle2 size={14} /> Preț negociabil</p>}
             </div>
 
@@ -595,16 +615,28 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
 
 
             <div className="bg-white p-8 rounded-3xl shadow-xl shadow-gray-200/40 border border-gray-200">
-              <div className="mb-8 flex items-center gap-4">
+              <Link href={`?agentProfile=${property.agent.id || 'anonimo'}`} scroll={false} className="mb-8 flex items-center gap-4 group/profile hover:bg-gray-50 p-2 -m-2 rounded-2xl transition-colors cursor-pointer">
                 <AgentAvatar 
                   initialImage={property.agent.image} 
                   name={property.agent.name} 
                 />
                 <div>
-                  <h3 className="font-bold text-gray-900 text-[17px] tracking-tight">{property.agent.name}</h3>
+                  <h3 className="font-bold text-gray-900 text-[17px] tracking-tight group-hover/profile:text-[#139E69] transition-colors">{property.agent.name}</h3>
                   <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-widest mt-0.5">{property.agent.role}</p>
+                  <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex items-center text-yellow-400">
+                      <Star size={12} fill="currentColor" strokeWidth={0} />
+                      <Star size={12} fill="currentColor" strokeWidth={0} />
+                      <Star size={12} fill="currentColor" strokeWidth={0} />
+                      <Star size={12} fill="currentColor" strokeWidth={0} />
+                      <Star size={12} fill="currentColor" strokeWidth={0} />
+                      <span className="text-[11px] text-gray-500 font-bold ml-1">5.0</span>
+                    </div>
+                    <span className="text-gray-300 text-[10px]">•</span>
+                    <span className="text-[11px] font-medium text-gray-400">Membru din 2024</span>
+                  </div>
                 </div>
-              </div>
+              </Link>
 
               <div className="space-y-6">
                 <h4 className="font-bold text-gray-900 text-[15px] mb-3 border-b border-gray-100 pb-2">Solicită informații sau vizită</h4>
@@ -612,8 +644,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                 <ContactForm property={property} />
 
                 <SecondaryActions />
-                
-
               </div>
             </div>
 
@@ -682,7 +712,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                               {/* Floating Elegant Tooltip */}
                               <div className="absolute bottom-full left-0 mb-3 w-56 p-3 bg-gray-900/95 backdrop-blur-xl text-white text-[11px] font-medium leading-normal rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.3)] opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible group-hover/tooltip:translate-y-[-4px] transition-all duration-300 pointer-events-none z-[100] normal-case tracking-normal border border-white/10">
                                 <p className="relative z-10">
-                                  Recomandare <span className="text-[#f25c1a] font-bold">IMOOB</span>. Imobil de la un utilizator extern.
+                                  Recomandare <span className="text-[#f25c1a] font-bold">Xmobe</span>. Imobil de la un utilizator extern.
                                 </p>
                                 {/* Glow effect inside tooltip */}
                                 <div className="absolute top-0 right-0 w-12 h-12 bg-[#f25c1a]/10 blur-xl rounded-full"></div>
@@ -710,7 +740,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
                         </div>
 
                         <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
-                          <div className="text-lg font-black text-[#139E69] tracking-tighter">{adFormattedPrice}</div>
+                          <div className="text-lg font-black text-[#139E69] tracking-tighter flex items-baseline gap-1">
+                            {adFormattedPrice}
+                            {ad.status === 'for-rent' && <span className="text-[12px] font-bold text-gray-400">/ lună</span>}
+                          </div>
                           <div className="flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
                             <span>{ad.features.bedrooms} cam.</span>
                             <span>{ad.features.area} m²</span>

@@ -67,7 +67,7 @@ export default function ContactModal({ isOpen, onClose, propertyName }: ContactM
               rows={4}
               placeholder="Mesaj..."
               className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:border-[#f25c1a] focus:ring-1 focus:ring-[#f25c1a] transition-all text-sm resize-none"
-              defaultValue={`Bună, am văzut acest anunț "${propertyName}" pe IMOOB și mă interesează să primesc mai multe informații. Mulțumesc!`}
+              defaultValue={`Bună, am văzut acest anunț "${propertyName}" pe Xmobe și mă interesează să primesc mai multe informații. Mulțumesc!`}
             />
           </div>
 

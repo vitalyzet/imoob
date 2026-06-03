@@ -4,8 +4,8 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 
 export const metadata: Metadata = {
-  title: 'Sobre Nosotros - IMOOB 2026',
-  description: 'Descubre IMOOB, la plataforma inmobiliaria más innovadora del 2026 con tecnología IA avanzada para revolucionar el sector.',
+  title: 'Sobre Nosotros - Xmobe 2026',
+  description: 'Descubre Xmobe, la plataforma inmobiliaria más innovadora del 2026 con tecnología IA avanzada para revolucionar el sector.',
 };
 
 const stats = [
@@ -55,7 +55,7 @@ const values = [
 ];
 
 const timeline = [
-  { year: '2026', title: 'Fundación', description: 'IMOOB nace como la plataforma inmobiliaria más innovadora del 2026, revolucionando el sector con tecnología de vanguardia.' },
+  { year: '2026', title: 'Fundación', description: 'Xmobe nace como la plataforma inmobiliaria más innovadora del 2026, revolucionando el sector con tecnología de vanguardia.' },
   { year: '2026', title: 'Lanzamiento Digital', description: 'Plataforma completamente digital con IA avanzada para matching perfecto entre compradores y propiedades.' },
   { year: '2026', title: 'Expansión Nacional', description: 'Cobertura completa en España con presencia en todas las comunidades autónomas.' },
   { year: '2026', title: 'Innovación Continua', description: 'Primer trimestre del año marca el inicio de una nueva era en el sector inmobiliario español.' },
@@ -111,7 +111,7 @@ export default function SobreNosotros() {
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white mb-8 tracking-tight leading-tight">
             Acerca de <span className="text-white relative">
-              IMOOB
+              Xmobe
               <div className="absolute -bottom-2 left-0 w-full h-1 bg-white opacity-80"></div>
             </span>
           </h1>
@@ -163,7 +163,7 @@ export default function SobreNosotros() {
               </div>
 
               <p className="text-slate-600 text-lg leading-relaxed mb-6">
-                Fundada en 2026, IMOOB llega como la plataforma inmobiliaria más innovadora del año, revolucionando el sector con tecnología de vanguardia y una experiencia completamente digital. Nuestra visión es transformar completamente cómo se compran y venden propiedades en España.
+                Fundada en 2026, Xmobe llega como la plataforma inmobiliaria más innovadora del año, revolucionando el sector con tecnología de vanguardia y una experiencia completamente digital. Nuestra visión es transformar completamente cómo se compran y venden propiedades en España.
               </p>
 
               <p className="text-slate-600 text-lg leading-relaxed mb-8">

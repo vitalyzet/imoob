@@ -4,6 +4,8 @@ import './globals.css';
 import Navbar from '@/components/layout/Navbar';
 import Footer from '@/components/layout/Footer';
 import { Providers } from './providers';
+import AgentProfileModal from '@/components/profile/AgentProfileModal';
+import { Suspense } from 'react';
 
 const ubuntu = Ubuntu({ 
   weight: ['300', '400', '500', '700'],
@@ -13,10 +15,10 @@ const ubuntu = Ubuntu({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | IMOOB - Inmobiliaria',
-    default: 'IMOOB | Servicios Inmobiliarios',
+    template: '%s | Xmobe - Inmobiliaria',
+    default: 'Xmobe | Servicios Inmobiliarios',
   },
-  description: 'IMOOB. Innovación y tecnología al servicio del sector inmobiliario. Encontramos la propiedad perfecta para usted.',
+  description: 'Xmobe. Innovación y tecnología al servicio del sector inmobiliario. Encontramos la propiedad perfecta para usted.',
 };
 
 export default function RootLayout({
@@ -31,6 +33,9 @@ export default function RootLayout({
           <Navbar />
           <main className="flex-grow">
             {children}
+            <Suspense fallback={null}>
+              <AgentProfileModal />
+            </Suspense>
           </main>
           <Footer />
         </Providers>

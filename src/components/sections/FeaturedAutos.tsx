@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, limit, orderBy } from 'firebase/fire
 import { db } from '@/lib/firebase';
 import AutoCard from '../properties/AutoCard';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function FeaturedAutos() {
   const [autos, setAutos] = useState<any[]>([]);
@@ -19,20 +20,34 @@ export default function FeaturedAutos() {
           limit(8)
         );
         const snapshot = await getDocs(q);
-        const data = snapshot.docs.map(doc => {
+        const isAdExpired = (d: any) => {
+          if (d.status === 'expired' || d.status === 'inactive') return true;
+          if (d.createdAt) {
+            const created = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
+            const expiry = new Date(created);
+            expiry.setDate(expiry.getDate() + 30);
+            return new Date() > expiry;
+          }
+          return false;
+        };
+
+        const data = snapshot.docs.filter(doc => !isAdExpired(doc.data())).map(doc => {
           const d = doc.data();
           return {
             id: doc.id,
+            slug: d.slug || '',
             title: `${d.marca || ''} ${d.model || ''}`.trim() || 'Vehicul',
             price: Number(d.price) || 0,
+            oldPrice: d.oldPrice ? Number(d.oldPrice) : null,
             pretNegociabil: d.pretNegociabil || false,
             year: d.an || '',
             mileage: d.rulaj ? Number(d.rulaj).toLocaleString('ro-RO') : '—',
             fuel: d.combustibil || '',
-            transmission: d.cutie || '',
-            location: d.city || '',
+            transmission: d.transmisie || d.cutie || '',
+            location: d.city || d.location || '',
             image: d.images?.[0] || '',
             promoType: d.promoType || (d.isPromoted ? 'standard' : null),
+            createdAt: d.createdAt || null,
           };
         });
         setAutos(data);
@@ -61,9 +76,9 @@ export default function FeaturedAutos() {
             </h2>
             <p className="text-gray-500 font-medium">Vezi cele mai atractive oferte auto din piață.</p>
           </div>
-          <button className="hidden md:flex items-center gap-2 text-[var(--primary)] font-bold hover:gap-3 transition-all bg-[var(--primary)]/10 px-6 py-3 rounded-xl">
+          <Link href="/auto" className="hidden md:flex items-center gap-2 text-[var(--primary)] font-bold hover:gap-3 transition-all bg-[var(--primary)]/10 px-6 py-3 rounded-xl">
             Vezi toate ofertele →
-          </button>
+          </Link>
         </div>
 
         {loading ? (

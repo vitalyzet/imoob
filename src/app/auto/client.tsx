@@ -16,19 +16,20 @@ export default function AutoResultsContent() {
 
   // Unified keyword search
   const [keyword, setKeyword] = useState(
-    [searchParams.get('marca'), searchParams.get('model')].filter(Boolean).join(' ')
+    searchParams.get('keyword') || [searchParams.get('marca'), searchParams.get('model'), searchParams.get('city')].filter(Boolean).join(' ')
   );
   // Advanced filters
   const [yearMin, setYearMin] = useState(searchParams.get('an_min') || '');
   const [priceMax, setPriceMax] = useState(searchParams.get('pret_max') || '');
   const [combustibil, setCombustibil] = useState(searchParams.get('combustibil') || '');
-  const [caroserie, setCaroserie] = useState('');
-  const [transmisie, setTransmisie] = useState('');
-  const [stare, setStare] = useState('');
-  const [priceMin, setPriceMin] = useState('');
-  const [yearMax, setYearMax] = useState('');
+  const [caroserie, setCaroserie] = useState(searchParams.get('caroserie') || '');
+  const [transmisie, setTransmisie] = useState(searchParams.get('transmisie') || '');
+  const [stare, setStare] = useState(searchParams.get('stare') || '');
+  const [location, setLocation] = useState(searchParams.get('location') || '');
+  const [priceMin, setPriceMin] = useState(searchParams.get('pret_min') || '');
+  const [yearMax, setYearMax] = useState(searchParams.get('an_max') || '');
   const [showFilters, setShowFilters] = useState(false);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>((searchParams.get('view') as 'grid' | 'list') || 'grid');
 
   // Fetch all active autos once
   useEffect(() => {
@@ -40,7 +41,17 @@ export default function AutoResultsContent() {
           where('status', '==', 'active')
         );
         const snap = await getDocs(q);
-        const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const isAdExpired = (d: any) => {
+          if (d.status === 'expired' || d.status === 'inactive') return true;
+          if (d.createdAt) {
+            const created = d.createdAt.toDate ? d.createdAt.toDate() : new Date(d.createdAt);
+            const expiry = new Date(created);
+            expiry.setDate(expiry.getDate() + 30);
+            return new Date() > expiry;
+          }
+          return false;
+        };
+        const data = snap.docs.filter(doc => !isAdExpired(doc.data())).map(doc => ({ id: doc.id, ...doc.data() }));
         setAllAutos(data);
       } catch (err) {
         console.error('Error fetching autos:', err);
@@ -51,16 +62,54 @@ export default function AutoResultsContent() {
     fetchAutos();
   }, []);
 
+  // Sync state to URL params smoothly so back navigation preserves filters
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    
+    const syncParam = (key: string, value: string) => {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    };
+
+    syncParam('keyword', keyword);
+    syncParam('an_min', yearMin);
+    syncParam('an_max', yearMax);
+    syncParam('pret_min', priceMin);
+    syncParam('pret_max', priceMax);
+    syncParam('combustibil', combustibil);
+    syncParam('caroserie', caroserie);
+    syncParam('transmisie', transmisie);
+    syncParam('stare', stare);
+    syncParam('location', location);
+    syncParam('view', viewMode !== 'grid' ? viewMode : '');
+    
+    // Clear out the legacy URL params if user started typing over them
+    if (keyword) {
+      params.delete('marca');
+      params.delete('model');
+      params.delete('city');
+    }
+    
+    const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+    window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+  }, [keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare, location, viewMode]);
+
+  // Helper to remove diacritics for robust searching
+  const normalizeStr = (str: string) => {
+    if (!str) return '';
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  };
+
   // Client-side filtering with unified keyword
   const filtered = useMemo(() => {
     return allAutos.filter(auto => {
       // Keyword search — match against marca, model, city, an, combustibil, caroserie
       if (keyword.trim()) {
-        const words = keyword.toLowerCase().split(/\s+/);
-        const haystack = [
+        const words = normalizeStr(keyword).split(/\s+/);
+        const haystack = normalizeStr([
           auto.marca, auto.model, auto.city, auto.an,
           auto.combustibil, auto.caroserie, auto.culoare, auto.stare
-        ].filter(Boolean).join(' ').toLowerCase();
+        ].filter(Boolean).join(' '));
         if (!words.every(w => haystack.includes(w))) return false;
       }
       // Advanced filters
@@ -72,19 +121,21 @@ export default function AutoResultsContent() {
       if (caroserie && (auto.caroserie || '').toLowerCase() !== caroserie.toLowerCase()) return false;
       if (transmisie && (auto.transmisie || '').toLowerCase() !== transmisie.toLowerCase()) return false;
       if (stare && (auto.stare || '').toLowerCase() !== stare.toLowerCase()) return false;
+      if (location && !normalizeStr(auto.city).includes(normalizeStr(location))) return false;
       return true;
     });
-  }, [allAutos, keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare]);
+  }, [allAutos, keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare, location]);
 
   const clearAll = () => {
-    setKeyword(''); setYearMin(''); setYearMax(''); setPriceMin(''); setPriceMax(''); setCombustibil(''); setCaroserie(''); setTransmisie(''); setStare('');
+    setKeyword(''); setYearMin(''); setYearMax(''); setPriceMin(''); setPriceMax(''); setCombustibil(''); setCaroserie(''); setTransmisie(''); setStare(''); setLocation('');
   };
 
-  const hasFilters = keyword || yearMin || priceMax || combustibil;
+  const hasFilters = keyword || yearMin || priceMax || combustibil || transmisie || location;
 
   // Map auto data for AutoCard
   const mapForCard = (auto: any) => ({
     id: auto.id,
+    slug: auto.slug || '',
     title: `${auto.marca || ''} ${auto.model || ''}`.trim() || 'Vehicul',
     price: Number(auto.price) || 0,
     oldPrice: auto.oldPrice ? Number(auto.oldPrice) : null,
@@ -96,6 +147,7 @@ export default function AutoResultsContent() {
     location: auto.city || '',
     image: auto.images?.[0] || '',
     promoType: auto.promoType || (auto.isPromoted ? 'standard' : null),
+    createdAt: auto.createdAt || auto.timestamp || null,
   });
 
   return (
@@ -134,7 +186,7 @@ export default function AutoResultsContent() {
           {/* Advanced Filters — only in grid mode */}
           {viewMode === 'grid' && showFilters && (
             <div className="bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]/80 p-5 mb-5 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                   <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">An minim fabricație</label>
                   <select
@@ -177,10 +229,20 @@ export default function AutoResultsContent() {
                     <option value="GPL">GPL</option>
                   </select>
                 </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">Locație</label>
+                  <input
+                    type="text"
+                    placeholder="ex: București"
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none"
+                  />
+                </div>
               </div>
-              {(yearMin || priceMax || combustibil) && (
+              {(yearMin || priceMax || combustibil || location) && (
                 <button
-                  onClick={() => { setYearMin(''); setPriceMax(''); setCombustibil(''); }}
+                  onClick={() => { setYearMin(''); setPriceMax(''); setCombustibil(''); setLocation(''); }}
                   className="mt-4 flex items-center gap-1.5 text-[12px] text-[#94a3b8] hover:text-rose-400 font-semibold transition-colors"
                 >
                   <X size={13} /> Resetează filtrele avansate
@@ -219,6 +281,16 @@ export default function AutoResultsContent() {
                   {combustibil && (
                     <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-sky-100/60">
                       {combustibil} <button onClick={() => setCombustibil('')}><X size={11} /></button>
+                    </span>
+                  )}
+                  {location && (
+                    <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-sky-100/60">
+                      {location} <button onClick={() => setLocation('')}><X size={11} /></button>
+                    </span>
+                  )}
+                  {transmisie && (
+                    <span className="inline-flex items-center gap-1.5 bg-sky-50 text-sky-700 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-sky-100/60">
+                      {transmisie} <button onClick={() => setTransmisie('')}><X size={11} /></button>
                     </span>
                   )}
                   <button onClick={clearAll} className="text-[11px] text-[#94a3b8] hover:text-rose-400 font-semibold transition-colors underline">
@@ -302,6 +374,13 @@ export default function AutoResultsContent() {
                     />
                     {keyword && <button onClick={() => setKeyword('')} className="text-[#94a3b8] hover:text-[#334155]"><X size={13} /></button>}
                   </div>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">Locație</label>
+                  <input type="text" placeholder="ex: Cluj-Napoca" value={location} onChange={e => setLocation(e.target.value)}
+                    className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-[12px] font-bold text-[#334155] outline-none focus:ring-2 focus:ring-sky-400" />
                 </div>
 
                 {/* Preț */}
@@ -416,7 +495,7 @@ export default function AutoResultsContent() {
               ) : filtered.map(auto => {
                 const d = mapForCard(auto);
                 return (
-                  <Link key={auto.id} href={`/auto/${auto.id}`} className="bg-white rounded-2xl border border-[#e2e8f0]/80 hover:border-sky-200 hover:shadow-lg transition-all flex overflow-hidden group relative">
+                  <Link key={auto.id} href={`/auto/${auto.slug || auto.id}`} className="bg-white rounded-2xl border border-[#e2e8f0]/80 hover:border-sky-200 hover:shadow-lg transition-all flex overflow-hidden group relative">
                     {/* Promotion Ribbon for List View */}
                     {auto.promoType && (
                       <div className="absolute top-4 left-0 z-20">
