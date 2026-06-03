@@ -10,19 +10,19 @@ import RecommendedAutoSearches from './RecommendedAutoSearches';
 export default function DomainView() {
   const { domain } = useDomain();
 
-  return (
-    <>
-      {/* Imobiliare Domain */}
-      <div className={domain === 'imobiliare' ? 'block' : 'hidden'}>
-        <FeaturedProperties />
-        <RecommendedSearches />
-      </div>
-
-      {/* Auto Domain */}
-      <div className={domain === 'auto' ? 'block' : 'hidden'}>
+  if (domain === 'auto') {
+    return (
+      <>
         <FeaturedAutos />
         <RecommendedAutoSearches />
-      </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <FeaturedProperties />
+      <RecommendedSearches />
     </>
   );
 }

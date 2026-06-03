@@ -133,7 +133,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 sticky top-0 z-10 shadow-sm">
           <h1 className="text-xl font-black text-slate-800">Centro de Control</h1>
           <div className="flex items-center gap-4">
-             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+             <Link href="/" className="flex items-center gap-2 bg-slate-800 hover:bg-black text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md active:scale-95">
+               <Home size={16} />
+               Volver a Vindu24
+             </Link>
+             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 cursor-pointer hover:bg-slate-200 transition-colors">
                <Settings size={20} />
              </div>
              <div className="w-10 h-10 rounded-full overflow-hidden bg-emerald-500 border-2 border-white shadow-sm flex items-center justify-center font-bold text-white uppercase">

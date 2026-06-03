@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Loader2, Building2, Car, MapPin, CalendarDays, Clock, Fuel, Gauge, LayoutGrid, Filter, Trash2 } from 'lucide-react';
+import { Loader2, Building2, Car, MapPin, CalendarDays, Clock, Fuel, Gauge, LayoutGrid, Filter } from 'lucide-react';
 
 type AdType = 'all' | 'imobiliare' | 'auto';
 
@@ -50,18 +50,6 @@ export default function ActiveAdsPage() {
 
     fetchActiveAds();
   }, []);
-
-  const handleDelete = async (ad: any) => {
-    if (window.confirm('Ești sigur că vrei să ștergi definitiv acest anunț? Această acțiune nu poate fi anulată.')) {
-      try {
-        await deleteDoc(doc(db, ad._collection, ad.id));
-        setAds(prev => prev.filter(a => a.id !== ad.id));
-      } catch (err) {
-        console.error('Error deleting ad:', err);
-        alert('A apărut o eroare la ștergerea anunțului.');
-      }
-    }
-  };
 
   const getExpiryDate = (ad: any) => {
     if (!ad.createdAt?.seconds) return null;
@@ -115,21 +103,19 @@ export default function ActiveAdsPage() {
           <button
             key={tab.id}
             onClick={() => setFilter(tab.id)}
-            className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 ${
-              filter === tab.id
-                ? tab.id === 'auto' 
+            className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all flex items-center gap-2 ${filter === tab.id
+                ? tab.id === 'auto'
                   ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
                   : tab.id === 'imobiliare'
                     ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
                     : 'bg-slate-800 text-white shadow-lg'
                 : 'bg-white text-slate-500 hover:bg-slate-50 border border-slate-200'
-            }`}
+              }`}
           >
             {tab.icon && <tab.icon size={14} />}
             {tab.label}
-            <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${
-              filter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400'
-            }`}>
+            <span className={`px-1.5 py-0.5 rounded-md text-[10px] ${filter === tab.id ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-400'
+              }`}>
               {tab.count}
             </span>
           </button>
@@ -153,24 +139,23 @@ export default function ActiveAdsPage() {
             const daysLeft = getDaysLeft(ad);
             const expiryDate = getExpiryDate(ad);
             const isExpiringSoon = daysLeft !== null && daysLeft <= 5;
-            const createdDate = ad.createdAt?.seconds 
+            const createdDate = ad.createdAt?.seconds
               ? new Date(ad.createdAt.seconds * 1000).toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })
               : '—';
-            const expiryStr = expiryDate 
+            const expiryStr = expiryDate
               ? expiryDate.toLocaleDateString('ro-RO', { day: 'numeric', month: 'short', year: 'numeric' })
               : '—';
 
             return (
               <div
                 key={ad.id}
-                className={`bg-white rounded-2xl border overflow-hidden flex flex-col sm:flex-row transition-all duration-300 ${
-                  isAuto 
-                    ? 'border-sky-100 hover:shadow-[0_10px_30px_-10px_rgba(14,165,233,0.12)]' 
+                className={`bg-white rounded-2xl border overflow-hidden flex flex-col sm:flex-row transition-all duration-300 ${isAuto
+                    ? 'border-sky-100 hover:shadow-[0_10px_30px_-10px_rgba(14,165,233,0.12)]'
                     : 'border-slate-100 hover:shadow-[0_10px_30px_-10px_rgba(0,0,0,0.06)]'
-                }`}
+                  }`}
               >
                 {/* Image */}
-                <div className="relative w-full sm:w-[200px] h-[200px] sm:h-[130px] flex-shrink-0">
+                <div className="relative w-full sm:w-[180px] h-36 sm:h-auto flex-shrink-0">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={ad.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=400&h=300&q=80'}
@@ -179,9 +164,8 @@ export default function ActiveAdsPage() {
                   />
                   {/* Domain badge */}
                   <div className="absolute top-2.5 left-2.5">
-                    <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-white flex items-center gap-1 shadow-lg backdrop-blur-md ${
-                      isAuto ? 'bg-sky-500/90' : 'bg-emerald-500/90'
-                    }`}>
+                    <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest text-white flex items-center gap-1 shadow-lg backdrop-blur-md ${isAuto ? 'bg-sky-500/90' : 'bg-emerald-500/90'
+                      }`}>
                       {isAuto ? <><Car size={10} /> Auto</> : <><Building2 size={10} /> Imob</>}
                     </span>
                   </div>
@@ -192,8 +176,8 @@ export default function ActiveAdsPage() {
                   {/* Info */}
                   <div className="flex-grow min-w-0">
                     <h3 className="text-[16px] font-black text-slate-800 leading-tight truncate">
-                      {isAuto 
-                        ? `${ad.marca || 'Vehicul'} ${ad.model || ''}` 
+                      {isAuto
+                        ? `${ad.marca || 'Vehicul'} ${ad.model || ''}`
                         : `${ad.propertyType || ad.type || 'Proprietate'} — ${ad.operation || 'vânzare'}`
                       }
                     </h3>
@@ -219,20 +203,18 @@ export default function ActiveAdsPage() {
                   </div>
 
                   {/* Price */}
-                  <div className={`text-[20px] font-black whitespace-nowrap px-3 py-1.5 rounded-xl border shrink-0 ${
-                    isAuto 
-                      ? 'text-sky-600 bg-sky-50 border-sky-100' 
+                  <div className={`text-[20px] font-black whitespace-nowrap px-3 py-1.5 rounded-xl border shrink-0 ${isAuto
+                      ? 'text-sky-600 bg-sky-50 border-sky-100'
                       : 'text-emerald-600 bg-emerald-50 border-emerald-100'
-                  }`}>
+                    }`}>
                     {ad.price ? `${Number(ad.price).toLocaleString('ro-RO')} €` : 'Consultă'}
                   </div>
 
                   {/* Expiry */}
-                  <div className={`flex flex-col items-center px-5 py-3 rounded-xl border shrink-0 min-w-[130px] ${
-                    isExpiringSoon 
-                      ? 'bg-red-50 border-red-100' 
+                  <div className={`flex flex-col items-center px-5 py-3 rounded-xl border shrink-0 min-w-[130px] ${isExpiringSoon
+                      ? 'bg-red-50 border-red-100'
                       : 'bg-slate-50 border-slate-100'
-                  }`}>
+                    }`}>
                     <div className="flex items-center gap-1.5 mb-1">
                       <Clock size={12} className={isExpiringSoon ? 'text-red-400' : 'text-slate-400'} />
                       <span className={`text-[10px] font-black uppercase tracking-widest ${isExpiringSoon ? 'text-red-500' : 'text-slate-500'}`}>
@@ -243,9 +225,8 @@ export default function ActiveAdsPage() {
                       {expiryStr}
                     </span>
                     {daysLeft !== null && (
-                      <span className={`text-[10px] font-bold mt-0.5 ${
-                        isExpiringSoon ? 'text-red-400' : 'text-slate-400'
-                      }`}>
+                      <span className={`text-[10px] font-bold mt-0.5 ${isExpiringSoon ? 'text-red-400' : 'text-slate-400'
+                        }`}>
                         {daysLeft === 0 ? 'Expiră azi!' : `${daysLeft} zile rămase`}
                       </span>
                     )}
@@ -262,17 +243,6 @@ export default function ActiveAdsPage() {
                     <span className="text-[13px] font-bold text-slate-600">
                       {createdDate}
                     </span>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex flex-col items-center justify-center shrink-0 ml-2">
-                    <button
-                      onClick={() => handleDelete(ad)}
-                      className="p-3 text-red-500 hover:text-white bg-red-50 hover:bg-red-500 rounded-xl transition-colors shadow-sm border border-red-100 group"
-                      title="Șterge definitiv anunțul"
-                    >
-                      <Trash2 size={18} className="group-hover:scale-110 transition-transform" />
-                    </button>
                   </div>
                 </div>
               </div>
