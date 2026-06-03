@@ -225,7 +225,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <div className={`absolute inset-0 transition-opacity duration-1000 ${domain === 'imobiliare' ? 'opacity-100' : 'opacity-0'}`}>
           <Image 
-            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=2000" 
+            src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=60&w=1080" 
             alt="Luxury Home Background" 
             fill
             priority
@@ -235,7 +235,7 @@ export default function Hero() {
         </div>
         <div className={`absolute inset-0 transition-opacity duration-1000 ${domain === 'auto' ? 'opacity-100' : 'opacity-0'}`}>
           <Image 
-            src="https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=80&w=2000" 
+            src="https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=60&w=1080" 
             alt="Luxury Car Background" 
             fill
             priority
