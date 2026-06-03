@@ -39,11 +39,11 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       >
         <style>
           {`
-            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;700&display=swap');
-            .logo-vin { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -1.5px; }
-            .logo-du { font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: -1.5px; }
-            .logo-24 { font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: 34px; letter-spacing: -0.5px; }
-            .logo-ro { font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -0.5px; }
+            @import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;700&display=swap');
+            .logo-vin { font-family: 'Ubuntu', sans-serif; font-weight: 700; font-size: 36px; letter-spacing: -1.5px; }
+            .logo-du { font-family: 'Ubuntu', sans-serif; font-weight: 400; font-size: 36px; letter-spacing: -1.5px; }
+            .logo-24 { font-family: 'Ubuntu', sans-serif; font-weight: 300; font-size: 36px; letter-spacing: -0.5px; }
+            .logo-ro { font-family: 'Ubuntu', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -0.5px; }
           `}
         </style>
 
