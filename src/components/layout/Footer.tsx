@@ -21,7 +21,6 @@ export default function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center mb-4 gap-1">
               <Logo size="md" />
-              <span className="text-xs text-gray-500 font-bold self-end mb-1">.ro</span>
             </Link>
             <p className="text-gray-600 text-sm leading-relaxed mb-6">
               Platformă de anunțuri imobiliare din România. Locul perfect pentru a găsi casa ta de vis. Simplu, sigur și rapid.
