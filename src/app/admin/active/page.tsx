@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Loader2, Building2, Car, MapPin, CalendarDays, Clock, Fuel, Gauge, LayoutGrid, Filter } from 'lucide-react';
+import { Loader2, Building2, Car, MapPin, CalendarDays, Clock, Fuel, Gauge, LayoutGrid, Filter, Trash2 } from 'lucide-react';
 
 type AdType = 'all' | 'imobiliare' | 'auto';
 
@@ -50,6 +50,18 @@ export default function ActiveAdsPage() {
 
     fetchActiveAds();
   }, []);
+
+  const handleDelete = async (ad: any) => {
+    if (window.confirm('Ești sigur că vrei să ștergi definitiv acest anunț? Această acțiune nu poate fi anulată.')) {
+      try {
+        await deleteDoc(doc(db, ad._collection, ad.id));
+        setAds(prev => prev.filter(a => a.id !== ad.id));
+      } catch (err) {
+        console.error('Error deleting ad:', err);
+        alert('A apărut o eroare la ștergerea anunțului.');
+      }
+    }
+  };
 
   const getExpiryDate = (ad: any) => {
     if (!ad.createdAt?.seconds) return null;
@@ -250,6 +262,17 @@ export default function ActiveAdsPage() {
                     <span className="text-[13px] font-bold text-slate-600">
                       {createdDate}
                     </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex flex-col items-center justify-center shrink-0 ml-2">
+                    <button
+                      onClick={() => handleDelete(ad)}
+                      className="p-3 text-red-500 hover:text-white bg-red-50 hover:bg-red-500 rounded-xl transition-colors shadow-sm border border-red-100 group"
+                      title="Șterge definitiv anunțul"
+                    >
+                      <Trash2 size={18} className="group-hover:scale-110 transition-transform" />
+                    </button>
                   </div>
                 </div>
               </div>
