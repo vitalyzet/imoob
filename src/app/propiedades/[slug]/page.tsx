@@ -12,7 +12,9 @@ import AmenitiesSection from '@/components/properties/AmenitiesSection';
 import AgentAvatar from '@/components/properties/AgentAvatar';
 import PropertyActionButtons from '@/components/properties/PropertyActionButtons';
 
-export const dynamic = 'force-dynamic';
+// Revalidate the page every 60 seconds to enable ISR (Incremental Static Regeneration).
+// This serves the page instantly from Edge cache while updating it in the background.
+export const revalidate = 60;
 
 async function getPropertyData(slug: string) {
   try {
