@@ -32,7 +32,7 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       <svg 
         width="100%" 
         height="100%" 
-        viewBox="0 0 170 44" 
+        viewBox="0 0 185 44" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg" 
         style={{ display: 'block' }}
@@ -43,6 +43,7 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
             .logo-vin { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.5px; }
             .logo-du { font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: -1.5px; }
             .logo-24 { font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: 34px; letter-spacing: -0.5px; }
+            .logo-ro { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px; letter-spacing: -0.5px; }
           `}
         </style>
 
@@ -53,6 +54,8 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
           <tspan className="logo-du" fill={dark ? "#ffffff" : "#1e293b"}>du</tspan>
           {/* '24' fino en azul */}
           <tspan className="logo-24" fill={dark ? "#60a5fa" : "#0ea5e9"}>24</tspan>
+          {/* '.ro' pegadito y más pequeño */}
+          <tspan className="logo-ro" fill={dark ? "#94a3b8" : "#64748b"} dx="2">.ro</tspan>
         </text>
       </svg>
     </div>
