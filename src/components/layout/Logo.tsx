@@ -39,16 +39,19 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       >
         <style>
           {`
-            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;800&display=swap');
-            .logo-vindu { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.5px; }
+            @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;800&display=swap');
+            .logo-vin { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.5px; }
+            .logo-du { font-family: 'Montserrat', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: -1.5px; }
             .logo-24 { font-family: 'Montserrat', sans-serif; font-weight: 300; font-size: 34px; letter-spacing: -0.5px; }
           `}
         </style>
 
         <text y="34" x="2">
-          {/* 'Vindu' con mucha fuerza (ExtraBold) */}
-          <tspan className="logo-vindu" fill={dark ? "#ffffff" : "#1e293b"}>Vindu</tspan>
-          {/* '24' muy fino y elegante (Light) */}
+          {/* 'Vin' grueso */}
+          <tspan className="logo-vin" fill={dark ? "#ffffff" : "#1e293b"}>Vin</tspan>
+          {/* 'du' menos grueso */}
+          <tspan className="logo-du" fill={dark ? "#ffffff" : "#1e293b"}>du</tspan>
+          {/* '24' fino en azul */}
           <tspan className="logo-24" fill={dark ? "#60a5fa" : "#0ea5e9"}>24</tspan>
         </text>
 
