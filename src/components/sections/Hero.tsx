@@ -19,7 +19,7 @@ export default function Hero() {
   const [type, setType] = useState('Toate tipurile');
   const [city, setCity] = useState(''); // Default to empty (no city selected)
   const [firebaseProperties, setFirebaseProperties] = useState<any[]>([]);
-  const [searchMode, setSearchMode] = useState<'classic' | 'professional'>('professional');
+  const [searchMode, setSearchMode] = useState<'classic' | 'professional'>('classic');
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
