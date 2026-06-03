@@ -33,7 +33,7 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       <svg 
         width="100%" 
         height="100%" 
-        viewBox="0 0 160 40" 
+        viewBox="0 0 160 42" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg" 
         style={{ display: 'block' }}
@@ -44,12 +44,24 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
             .logo-text { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.5px; }
           `}
         </style>
-        <text y="33">
+        
+        {/* Texto del Logo */}
+        <text y="32">
           {/* 'Vindu' en Gris muy oscuro elegante (o blanco si el fondo es oscuro) */}
           <tspan className="logo-text" fill={dark ? "#ffffff" : "#1e293b"}>Vindu</tspan>
           {/* '24' en el Azul Cielo de la sección Auto */}
           <tspan className="logo-text" fill="#0ea5e9">24</tspan>
         </text>
+
+        {/* Onda / Swoosh Aerodinámico debajo del texto */}
+        <path 
+          d="M 2 37 C 30 44 60 26 90 37 C 115 45 140 37 158 32" 
+          stroke="#0ea5e9" 
+          strokeWidth="2.5" 
+          strokeLinecap="round" 
+          fill="none" 
+          className="opacity-90"
+        />
       </svg>
     </div>
   );
