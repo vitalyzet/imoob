@@ -33,32 +33,35 @@ export default function Logo({ className = '', size = 'md', dark = false }: Logo
       <svg 
         width="100%" 
         height="100%" 
-        viewBox="0 0 160 40" 
+        viewBox="0 0 170 40" 
         fill="none" 
         xmlns="http://www.w3.org/2000/svg" 
         style={{ display: 'block' }}
       >
-        <defs>
-          {/* Patrón de cuadraditos para rellenar las letras de Vindu */}
-          <pattern id="squarePattern" x="0" y="0" width="5" height="5" patternUnits="userSpaceOnUse">
-            <rect x="0.5" y="0.5" width="3.5" height="3.5" rx="0.5" fill={dark ? "#ffffff" : "#334155"} />
-          </pattern>
-        </defs>
         <style>
           {`
             @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap');
             .logo-text { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: 34px; letter-spacing: -1.5px; }
           `}
         </style>
+
+        {/* Cuadraditos decorativos alrededor del texto */}
+        <rect x="0" y="2" width="4" height="4" rx="0.8" fill="#0ea5e9" opacity="0.3" />
+        <rect x="7" y="0" width="3" height="3" rx="0.6" fill="#0ea5e9" opacity="0.5" />
+        <rect x="3" y="9" width="2.5" height="2.5" rx="0.4" fill="#0ea5e9" opacity="0.2" />
         
-        {/* 'Vindu' con textura de cuadraditos */}
-        <text y="32" className="logo-text">
-          <tspan fill="url(#squarePattern)">Vindu</tspan>
+        <rect x="148" y="5" width="4" height="4" rx="0.8" fill="#0ea5e9" opacity="0.4" />
+        <rect x="155" y="1" width="3" height="3" rx="0.6" fill="#0ea5e9" opacity="0.25" />
+        <rect x="150" y="12" width="2.5" height="2.5" rx="0.4" fill="#0ea5e9" opacity="0.15" />
+
+        {/* Texto principal */}
+        <text y="32">
+          <tspan className="logo-text" fill={dark ? "#ffffff" : "#475569"}>Vindu</tspan>
+          <tspan className="logo-text" fill="#0ea5e9">24</tspan>
         </text>
-        {/* '24' en Azul Cielo limpio */}
-        <text y="32" x="102" className="logo-text">
-          <tspan fill="#0ea5e9">24</tspan>
-        </text>
+
+        {/* Punto cuadrado como separador entre Vindu y 24 */}
+        <rect x="99" y="22" width="4" height="4" rx="0.8" fill="#0ea5e9" opacity="0.6" />
       </svg>
     </div>
   );
