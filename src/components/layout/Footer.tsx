@@ -23,7 +23,9 @@ export default function Footer() {
               <Logo size="md" />
             </Link>
             <p className="text-gray-600 text-sm leading-relaxed mb-6">
-              Platformă de anunțuri imobiliare din România. Locul perfect pentru a găsi casa ta de vis. Simplu, sigur și rapid.
+              {domain === 'auto' 
+                ? 'Platformă de anunțuri auto din România. Locul perfect pentru a găsi mașina ta de vis. Simplu, sigur și rapid.'
+                : 'Platformă de anunțuri imobiliare din România. Locul perfect pentru a găsi casa ta de vis. Simplu, sigur și rapid.'}
             </p>
 
             {/* Social Links */}
@@ -70,7 +72,6 @@ export default function Footer() {
                   <li><Link href="/auto?category=autoturisme" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Autoturisme</Link></li>
                   <li><Link href="/auto?category=motociclete" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Motociclete</Link></li>
                   <li><Link href="/auto?category=camioane" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Camioane</Link></li>
-                  <li><Link href="/auto?category=piese" className="text-gray-600 text-sm hover:text-[var(--primary)] transition-colors duration-300">Piese Auto</Link></li>
                 </>
               )}
             </ul>

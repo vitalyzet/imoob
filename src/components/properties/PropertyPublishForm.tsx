@@ -71,6 +71,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
         const updateData = formData;
         await updateDoc(doc(db, 'anuncios', editId), {
           ...updateData,
+          city: updateData.localitate || updateData.city || '',
           updatedAt: serverTimestamp(),
           status: 'pending'
         });
@@ -80,6 +81,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
 
         await addDoc(collection(db, 'anuncios'), {
           ...formData,
+          city: formData.localitate || formData.city || '',
           slug: generatedSlug,
           userId: user?.uid || '',
           email: formData.email || user?.email || '',
@@ -237,9 +239,9 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    // Límite de 8 fotos gratis
-    if (formData.images.length + files.length > 8) {
-      alert("Has alcanzado el límite máximo de 8 fotos gratis permitidas por anuncio.");
+    // Límite de 12 fotos gratis
+    if (formData.images.length + files.length > 12) {
+      alert("Has alcanzado el límite máximo de 12 fotos permitidas por anuncio.");
       return;
     }
     
@@ -451,7 +453,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                    {/* CTA */}
                    <div className="pt-6 flex justify-center">
                       <button 
-                        onClick={() => { if (isEditing && Number(currentStep) === 3) submitAd(); else nextStep(); }}
+                        onClick={() => { nextStep(); }}
                         className="flex items-center gap-2.5 bg-[#139E69] hover:bg-[#0f8a5a] text-white px-10 py-4 rounded-xl font-bold transition-all text-[15px] group active:scale-[0.98] shadow-lg shadow-[#139E69]/15"
                       >
                         Continuă <ArrowRight size={18} className="group-hover:translate-x-0.5 transition-transform" />
@@ -1196,7 +1198,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                        <button onClick={prevStep} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-bold transition-all text-[14px] group">
                          <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" /> Înapoi
                        </button>
-                       <button onClick={() => { if (isEditing && Number(currentStep) === 3) submitAd(); else nextStep(); }} className="flex items-center gap-2.5 bg-[#139E69] hover:bg-[#0f8a5a] text-white px-8 py-3.5 rounded-xl font-bold transition-all text-[14px] group active:scale-[0.98] shadow-lg shadow-[#139E69]/15">
+                       <button onClick={() => { nextStep(); }} className="flex items-center gap-2.5 bg-[#139E69] hover:bg-[#0f8a5a] text-white px-8 py-3.5 rounded-xl font-bold transition-all text-[14px] group active:scale-[0.98] shadow-lg shadow-[#139E69]/15">
                          Continuă <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
                        </button>
                     </div>
@@ -1371,7 +1373,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Înapoi
                       </button>
                       <button 
-                        onClick={() => { if (isEditing && Number(currentStep) === 3) submitAd(); else nextStep(); }}
+                        onClick={() => { nextStep(); }}
                         className="flex items-center gap-3 bg-[#139E69] hover:bg-[#0f8256] text-white px-10 py-4 rounded-[20px] font-black transition-all shadow-lg text-base group"
                       >
                         Continuă <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
@@ -1380,7 +1382,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                 </div>
               )}
 
-              {currentStep === 4 && !isEditing && (
+              {currentStep === 4 && (
                 <div className="space-y-10">
                   <header>
                     <h1 className="text-2xl font-black text-[#333] mb-2">Fotos de la propiedad</h1>
@@ -1432,16 +1434,38 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                          <div key={idx} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-sm border border-gray-100 group">
                            {/* eslint-disable-next-line @next/next/no-img-element */}
                            <img src={url} alt={`Preview ${idx}`} className="object-cover w-full h-full" />
-                           <button 
-                             onClick={() => updateField('images', formData.images.filter((_, i) => i !== idx))}
-                             className="absolute top-2 right-2 bg-white text-red-500 w-8 h-8 rounded-full flex items-center justify-center shadow-md hover:bg-red-50 hover:scale-110 transition-all border border-red-100"
-                           >
-                             <X size={16} strokeWidth={3} />
-                           </button>
+                           
+                           {/* Hover Overlay */}
+                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
+                             {idx !== 0 && (
+                               <button 
+                                 onClick={(e) => {
+                                   e.preventDefault();
+                                   const newImages = [...formData.images];
+                                   const [selected] = newImages.splice(idx, 1);
+                                   newImages.unshift(selected);
+                                   updateField('images', newImages);
+                                 }}
+                                 className="px-3 py-1.5 bg-[#139E69] text-white text-[11px] font-bold rounded-lg uppercase tracking-wider transform hover:scale-105 transition-transform shadow-md"
+                               >
+                                 Hacer Portada
+                               </button>
+                             )}
+                             <button 
+                               onClick={(e) => {
+                                 e.preventDefault();
+                                 updateField('images', formData.images.filter((_, i) => i !== idx));
+                               }}
+                               className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center transform hover:scale-110 transition-transform shadow-md"
+                             >
+                               <X size={16} strokeWidth={3} />
+                             </button>
+                           </div>
+                           
                            {idx === 0 && (
-                              <span className="absolute bottom-2 left-2 bg-[#139E69] text-white text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider">
+                              <div className="absolute bottom-0 left-0 w-full bg-[#139E69] text-white text-[10px] font-bold py-1 text-center uppercase tracking-wider z-10 pointer-events-none shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
                                 Portada
-                              </span>
+                              </div>
                            )}
                          </div>
                       ))}
@@ -1453,7 +1477,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                       <button onClick={prevStep} className="flex items-center gap-3 text-gray-500 hover:text-gray-900 px-6 py-3 font-bold transition-all text-base group">
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> Anterior
                       </button>
-                      <button onClick={() => { if (isEditing && Number(currentStep) === 3) submitAd(); else nextStep(); }} className="flex items-center gap-3 bg-[#139E69] hover:bg-[#0f8256] text-white px-10 py-4 rounded-[20px] font-black transition-all shadow-lg text-base group">
+                      <button onClick={() => { nextStep(); }} className="flex items-center gap-3 bg-[#139E69] hover:bg-[#0f8256] text-white px-10 py-4 rounded-[20px] font-black transition-all shadow-lg text-base group">
                         Siguiente <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                       </button>
                    </div>
@@ -1538,7 +1562,7 @@ export default function PropertyPublishForm({ editId }: { editId?: string }) {
                       <button onClick={prevStep} className="flex items-center gap-3 text-gray-500 hover:text-gray-900 px-6 py-3 font-bold transition-all text-base group">
                         <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" /> Anterior
                       </button>
-                      <button onClick={() => { if (isEditing && Number(currentStep) === 3) submitAd(); else nextStep(); }} className="flex items-center gap-3 bg-[#139E69] hover:bg-[#0f8256] text-white px-10 py-4 rounded-[20px] font-black transition-all shadow-lg text-base group">
+                      <button onClick={() => { nextStep(); }} className="flex items-center gap-3 bg-[#139E69] hover:bg-[#0f8256] text-white px-10 py-4 rounded-[20px] font-black transition-all shadow-lg text-base group">
                         Siguiente <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                       </button>
                    </div>

@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Heart, MapPin, Star, CalendarDays, MailX, ThumbsDown, Loader2, LayoutGrid, MessageSquare, Phone, Search, ThumbsUp, List, Wallet, Settings, LogOut, PlusSquare, Eye, Pencil, Trash2, RefreshCcw, BarChart3, TrendingUp, Check, ChevronDown, ChevronRight, Clock, CreditCard, ShieldCheck, BarChart, CheckCircle2, Car, Fuel, Gauge, Home } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Mail, Heart, MapPin, Star, CalendarDays, MailX, ThumbsDown, Loader2, LayoutGrid, MessageSquare, Phone, Search, ThumbsUp, List, Wallet, Settings, LogOut, PlusSquare, Eye, Pencil, Trash2, RefreshCcw, BarChart3, TrendingUp, Check, ChevronDown, ChevronRight, Clock, CreditCard, ShieldCheck, BarChart, CheckCircle2, Car, Fuel, Gauge, Home, Camera, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { collection, onSnapshot, query, orderBy, where, doc, getDoc, updateDoc, increment, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { compressImage } from '@/lib/imageCompression';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -42,8 +43,11 @@ export default function MyAdsPage() {
     rulaj: '',
     an: '',
     rooms: '',
-    surface: ''
+    surface: '',
+    images: [] as string[]
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [showConfirmSave, setShowConfirmSave] = useState(false);
 
@@ -58,7 +62,8 @@ export default function MyAdsPage() {
       rulaj: ad.rulaj ? String(ad.rulaj) : '',
       an: ad.an ? String(ad.an) : '',
       rooms: ad.rooms ? String(ad.rooms) : (ad.features?.bedrooms ? String(ad.features.bedrooms) : ''),
-      surface: ad.area ? String(ad.area) : (ad.surface ? String(ad.surface) : (ad.features?.area ? String(ad.features.area) : ''))
+      surface: ad.area ? String(ad.area) : (ad.surface ? String(ad.surface) : (ad.features?.area ? String(ad.features.area) : '')),
+      images: ad.images || []
     });
   };
 
@@ -109,6 +114,7 @@ export default function MyAdsPage() {
         description: editFormData.description,
         phone: editFormData.phone,
         city: editFormData.city,
+        images: editFormData.images,
         lastEdited: new Date()
       };
 
@@ -157,6 +163,35 @@ export default function MyAdsPage() {
     } finally {
       setIsSavingEdit(false);
     }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    if (editFormData.images.length + files.length > 12) {
+      alert("Maxim 12 fotografii permise."); return;
+    }
+    setIsUploading(true);
+    const newUrls: string[] = [];
+    await Promise.all(Array.from(files).map(async (rawFile) => {
+        try {
+            const file = await compressImage(rawFile);
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: file.name, contentType: file.type })
+            });
+            const data = await res.json();
+            if (data.uploadUrl) {
+                const uploadRes = await fetch(data.uploadUrl, {
+                    method: 'PUT', headers: { 'Content-Type': file.type }, body: file
+                });
+                if (uploadRes.ok) newUrls.push(data.finalUrl);
+            }
+        } catch (err) { console.error(err); }
+    }));
+    setEditFormData(prev => ({ ...prev, images: [...prev.images, ...newUrls] }));
+    setIsUploading(false);
   };
 
   const toggleStats = (id: string, e: React.MouseEvent) => {
@@ -779,6 +814,61 @@ export default function MyAdsPage() {
 
                 {/* Body Form */}
                 <div className="flex-grow overflow-y-auto p-6 space-y-5">
+                  {/* Photo Edit Section */}
+                  <div>
+                    <label className="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Fotografii (Maxim 12)</label>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {editFormData.images.map((img, idx) => (
+                        <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 group">
+                          <img src={img} alt="" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5 z-20">
+                            {idx !== 0 && (
+                              <button 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const newImages = [...editFormData.images];
+                                  const [selected] = newImages.splice(idx, 1);
+                                  newImages.unshift(selected);
+                                  setEditFormData(prev => ({ ...prev, images: newImages }));
+                                }}
+                                className="px-2 py-1 bg-sky-500 text-white text-[9px] font-bold rounded uppercase tracking-wider transform hover:scale-105 transition-transform"
+                              >
+                                Fă Copertă
+                              </button>
+                            )}
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                setEditFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }));
+                              }}
+                              className="w-7 h-7 bg-red-500 text-white rounded-full flex items-center justify-center transform hover:scale-110 transition-transform"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                          {idx === 0 && (
+                            <div className="absolute bottom-0 left-0 w-full bg-sky-500 text-white text-[9px] font-bold py-1 text-center uppercase tracking-wider z-10">
+                              Copertă
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                      {editFormData.images.length < 12 && (
+                        <label className="relative aspect-[4/3] rounded-xl border-2 border-dashed border-gray-300 hover:border-sky-400 hover:bg-sky-50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 group">
+                          {isUploading ? (
+                            <Loader2 size={20} className="animate-spin text-sky-500" />
+                          ) : (
+                            <>
+                              <Camera size={20} className="text-gray-400 group-hover:text-sky-500 transition-colors" />
+                              <span className="text-[10px] font-bold text-gray-400 group-hover:text-sky-500">Adaugă</span>
+                            </>
+                          )}
+                          <input type="file" className="hidden" accept="image/*" multiple onChange={handleFileUpload} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Warning/Time lock alert */}
                   {isLocked && (
                     <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/50 flex gap-3 text-amber-800 animate-in fade-in slide-in-from-top-4 duration-500">

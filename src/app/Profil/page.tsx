@@ -153,6 +153,53 @@ export default function OverviewPage() {
         </Link>
       </div>
 
+      {/* Info Banner */}
+      <div className="bg-sky-50 border border-sky-100 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center gap-6 justify-between">
+        <div className="flex items-start gap-5 flex-1 w-full">
+          <div className="w-12 h-12 bg-sky-100 text-sky-500 rounded-2xl flex items-center justify-center shrink-0">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-sky-900 mb-2">Avantajele contului tău Vindu24</h3>
+            <ul className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 text-sm text-sky-800 font-medium">
+              <li className="flex flex-col gap-1.5 justify-center">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
+                    Anunțuri gratuite
+                  </span>
+                  <span className="text-[11px] font-black bg-sky-200/50 px-2 py-0.5 rounded-md text-sky-700">
+                    {stats.ads}/5 utilizate
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-sky-100 rounded-full overflow-hidden mt-0.5">
+                  <div 
+                    className={`h-full rounded-full transition-all duration-1000 ${stats.ads >= 5 ? 'bg-rose-500' : 'bg-sky-500'}`} 
+                    style={{ width: `${Math.min((stats.ads / 5) * 100, 100)}%` }}
+                  ></div>
+                </div>
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
+                Maxim 15 fotografii pe anunț
+              </li>
+              <li className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-sky-500 rounded-full shrink-0"></span>
+                Reactivare gratuită după expirare
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="shrink-0 w-full md:w-auto border-t md:border-t-0 md:border-l border-sky-200/50 pt-5 md:pt-0 md:pl-6">
+          <p className="text-sky-900 font-bold text-sm mb-3 text-center md:text-left">Vrei anunțuri nelimitate?</p>
+          <Link href="/Profil/subscription" className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white text-[13px] font-bold rounded-xl shadow-[0_8px_20px_rgba(14,165,233,0.25)] hover:shadow-[0_8px_25px_rgba(14,165,233,0.35)] transition-all hover:-translate-y-0.5">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            Treci la PRO lunar
+          </Link>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <Link href="/Profil/promote-ads" className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 text-white relative overflow-hidden group">

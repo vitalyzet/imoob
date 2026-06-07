@@ -66,7 +66,11 @@ export default function ClassicAutoSearch() {
   useEffect(() => {
     const fetchTotalResults = async () => {
       try {
-        const conditions: any[] = [where('status', '==', 'active')];
+        const domainFilter = category === 'Motociclete' ? 'moto' : category === 'Camioane' ? 'camioane' : 'auto';
+        const conditions: any[] = [
+          where('status', '==', 'active'),
+          where('domain', '==', domainFilter)
+        ];
         if (marca) conditions.push(where('marca', '==', marca));
         if (model) conditions.push(where('model', '==', model));
         if (city) conditions.push(where('city', '==', city));
@@ -80,7 +84,7 @@ export default function ClassicAutoSearch() {
       }
     };
     fetchTotalResults();
-  }, [marca, model, city, transmission]);
+  }, [marca, model, city, transmission, category]);
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -90,9 +94,11 @@ export default function ClassicAutoSearch() {
           : category === 'Camioane' ? POPULAR_TRUCK_BRANDS
           : POPULAR_BRANDS;
         await Promise.all(popBrands.map(async (b) => {
+          const domainFilter = category === 'Motociclete' ? 'moto' : category === 'Camioane' ? 'camioane' : 'auto';
           const q = query(
             collection(db, 'anuncios_auto'), 
             where('status', '==', 'active'), 
+            where('domain', '==', domainFilter),
             where('marca', '==', b.dbName)
           );
           try {
@@ -152,9 +158,11 @@ export default function ClassicAutoSearch() {
       const missing = filteredBrands.filter(b => prev[b.dbName] === undefined);
       if (missing.length > 0) {
         missing.forEach(async (b) => {
+          const domainFilter = category === 'Motociclete' ? 'moto' : category === 'Camioane' ? 'camioane' : 'auto';
           const q = query(
             collection(db, 'anuncios_auto'), 
             where('status', '==', 'active'), 
+            where('domain', '==', domainFilter),
             where('marca', '==', b.dbName)
           );
           try {
@@ -176,6 +184,9 @@ export default function ClassicAutoSearch() {
     if (city) params.append('city', city);
     if (yearMin) params.append('an_min', yearMin);
     if (transmission) params.append('transmisie', transmission);
+    if (category === 'Motociclete') params.append('domain', 'moto');
+    else if (category === 'Camioane') params.append('domain', 'camioane');
+    else params.append('domain', 'auto');
     
     router.push(`/auto?${params.toString()}`);
   };

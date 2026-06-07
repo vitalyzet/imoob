@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useDomain } from '@/context/DomainContext';
 import AutoSearchBar from './AutoSearchBar';
 import ClassicAutoSearch from './ClassicAutoSearch';
@@ -602,9 +603,9 @@ export default function Hero() {
             <div className="flex gap-0.5"><div className="w-1 h-3 bg-current"/><div className="w-1 h-3 bg-current"/><div className="w-1 h-3 bg-current"/></div>
             Căutare profesională
           </button>
-          <button className="flex items-center gap-2 hover:text-[var(--primary)] transition-colors">
+          <Link href="/Profil/searches" className="flex items-center gap-2 hover:text-[var(--primary)] transition-colors">
             <Heart size={16} /> {domain === 'auto' ? 'Căutările mele Auto' : 'Căutările mele'}
-          </button>
+          </Link>
         </div>
       </div>
 

@@ -118,6 +118,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
             Transacciones
           </Link>
+          
+          <Link 
+            href="/admin/seo" 
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+              pathname === '/admin/seo' 
+                ? 'bg-[#139E69]/10 text-[#10b981]' 
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Settings size={20} />
+            Setări SEO
+          </Link>
         </nav>
 
         <div className="p-4 border-t border-[#1e293b]">

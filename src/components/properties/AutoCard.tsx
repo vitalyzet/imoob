@@ -75,7 +75,7 @@ export default function AutoCard({ auto }: AutoCardProps) {
 
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
               {isNew && (
-                <span className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm w-fit">
+                <span className="bg-[#139E69] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded shadow-sm w-fit">
                   Nou
                 </span>
               )}
@@ -178,7 +178,7 @@ export default function AutoCard({ auto }: AutoCardProps) {
             {auto.year || 2022}
           </span>
           {isNew && (
-            <span className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm w-fit">
+            <span className="bg-[#139E69] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full shadow-sm w-fit">
               Nou
             </span>
           )}

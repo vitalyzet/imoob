@@ -313,7 +313,7 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
             setFormData(prev => ({
               ...prev,
               ...data,
-              city: prev.city || data.location || data.city || ''
+              city: data.city || data.location || prev.city || ''
             }));
           } else {
             alert("Nu aveți permisiunea de a edita acest anunț.");
@@ -358,8 +358,8 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    if (formData.images.length + files.length > 8) {
-      alert("Maxim 8 fotografii permise."); return;
+    if (formData.images.length + files.length > 12) {
+      alert("Maxim 12 fotografii permise."); return;
     }
     setIsUploading(true);
     const newUrls: string[] = [];
@@ -938,12 +938,36 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
                     {formData.images.map((img, idx) => (
                       <div key={idx} className="relative aspect-[4/3] rounded-xl overflow-hidden border border-gray-200 group">
                         <img src={img} alt="" className="w-full h-full object-cover" />
-                        <button onClick={() => removeImage(idx)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <X size={14} />
-                        </button>
+                        
+                        {/* Hover Overlay */}
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-20">
+                          {idx !== 0 && (
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const newImages = [...formData.images];
+                                const [selected] = newImages.splice(idx, 1);
+                                newImages.unshift(selected);
+                                updateField('images', newImages);
+                              }}
+                              className="px-3 py-1.5 bg-sky-500 text-white text-[11px] font-bold rounded-lg uppercase tracking-wider transform hover:scale-105 transition-transform shadow-md"
+                            >
+                              Fă principală
+                            </button>
+                          )}
+                          <button 
+                            onClick={(e) => {
+                              e.preventDefault();
+                              removeImage(idx);
+                            }}
+                            className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center transform hover:scale-110 transition-transform shadow-md"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+
                         {idx === 0 && (
-                          <div className="absolute bottom-0 left-0 w-full bg-sky-500 text-white text-[10px] font-bold py-1 text-center uppercase tracking-wider">
+                          <div className="absolute bottom-0 left-0 w-full bg-sky-500 text-white text-[10px] font-bold py-1 text-center uppercase tracking-wider z-10 pointer-events-none shadow-[0_-2px_10px_rgba(0,0,0,0.1)]">
                             Foto Principală
                           </div>
                         )}
@@ -966,7 +990,7 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
                   <div className="flex items-start gap-3 p-4 bg-sky-50/60 rounded-xl border border-sky-100">
                     <Camera size={18} className="text-sky-500 mt-0.5 shrink-0" />
                     <p className="text-[13px] text-gray-600 leading-relaxed">
-                      Poți încărca <strong>maxim 8 fotografii</strong>. Prima imagine va fi setată automat ca fotografie principală a anunțului.
+                      Poți încărca <strong>maxim 12 fotografii</strong>. Prima imagine va fi setată automat ca fotografie principală a anunțului.
                     </p>
                   </div>
                 </div>

@@ -23,17 +23,40 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     }
 
     if (autoData) {
-      const title = `${autoData.marca || ''} ${autoData.model || ''}`.trim() + ' | vindu24';
-      const description = autoData.description?.substring(0, 160) || 'Detalii despre acest vehicul pe vindu24.';
+      const title = `${autoData.marca || ''} ${autoData.model || ''}`.trim() + ' | Vindu24';
+      const description = autoData.description ? (autoData.description.substring(0, 155) + '...') : `Descoperă acest vehicul ${autoData.marca || ''} ${autoData.model || ''} pe Vindu24 la prețul de ${autoData.price}€.`;
+      const image = autoData.images?.[0] || 'https://vindu24.ro/og-image.jpg';
+      const url = `https://vindu24.ro/auto/${slug}`;
       
       return {
         title,
         description,
+        keywords: `${autoData.marca || ''}, ${autoData.model || ''}, auto, masini, vanzari auto, ${autoData.city || ''}, Vindu24, auto rulate`,
         openGraph: {
           title,
           description,
-          images: autoData.images && autoData.images.length > 0 ? [{ url: autoData.images[0] }] : [],
-        }
+          url,
+          type: 'website',
+          images: [
+            {
+              url: image,
+              width: 1200,
+              height: 630,
+              alt: title,
+            }
+          ],
+          siteName: 'Vindu24',
+          locale: 'ro_RO',
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title,
+          description,
+          images: [image],
+        },
+        alternates: {
+          canonical: url,
+        },
       };
     }
   } catch (error) {
@@ -41,8 +64,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 
   return {
-    title: 'Vehicul | vindu24',
-    description: 'Anunț auto pe vindu24.'
+    title: 'Vehicul | Vindu24',
+    description: 'Anunț auto pe Vindu24.'
   };
 }
 

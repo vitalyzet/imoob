@@ -13,7 +13,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { PropertyStatus, PropertyType } from '@/lib/types';
 import { ROMANIA_LOCATIONS } from '@/constants/romaniaCities';
 
-export default function PropertiesClient({ initialProperties }: { initialProperties: Property[] }) {
+export default function PropertiesClient({ initialProperties, initialFilters }: { initialProperties: Property[], initialFilters?: { city?: string } }) {
   const searchParams = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -25,7 +25,7 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
   const { saveSearch } = useSavedSearches();
   
   const [filters, setFilters] = useState({
-    city: searchParams?.get('city') || '',
+    city: initialFilters?.city || searchParams?.get('city') || '',
     type: searchParams?.get('type') || '',
     minPrice: searchParams?.get('minPrice') ? Number(searchParams.get('minPrice')) : 0,
     maxPrice: 10000000,
@@ -35,7 +35,7 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
   });
 
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
-  const [locationQuery, setLocationQuery] = useState(searchParams?.get('city') || '');
+  const [locationQuery, setLocationQuery] = useState(initialFilters?.city || searchParams?.get('city') || '');
   const locationDropdownRef = useRef<HTMLDivElement>(null);
 
   const [showTypeDropdown, setShowTypeDropdown] = useState(false);
@@ -95,16 +95,17 @@ export default function PropertiesClient({ initialProperties }: { initialPropert
   };
 
   useEffect(() => {
-    setFilters({
-      city: searchParams?.get('city') || '',
+    setFilters(prev => ({
+      ...prev,
+      city: searchParams?.get('city') || initialFilters?.city || '',
       type: searchParams?.get('type') || '',
       minPrice: searchParams?.get('minPrice') ? Number(searchParams.get('minPrice')) : 0,
       maxPrice: searchParams?.get('maxPrice') ? Number(searchParams.get('maxPrice')) : 10000000,
       bedrooms: searchParams?.get('bedrooms') ? Number(searchParams.get('bedrooms')) : 0,
       status: searchParams?.get('status') || 'for-sale',
       isNewConstruction: searchParams?.get('new') === 'true',
-    });
-  }, [searchParams]);
+    }));
+  }, [searchParams, initialFilters]);
 
   useEffect(() => {
     setIsLoading(true);

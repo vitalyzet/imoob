@@ -51,7 +51,7 @@ export default function AutoDetailsPage() {
                 if (userData.name) autoData.name = userData.name;
                 if (userData.phone) autoData.phone = userData.phone;
                 if (userData.email) autoData.email = userData.email;
-                if (userData.location) autoData.city = userData.location;
+                // We don't override the car's city with the user's location
               }
             } catch (e) {
               console.error("Eroare la preluarea datelor live ale vânzătorului:", e);
@@ -115,8 +115,39 @@ export default function AutoDetailsPage() {
   }, [slug]);
 
   // Live viewer counter that fluctuates
-  const [liveViewers, setLiveViewers] = useState(Math.floor(Math.random() * 10) + 3);
-  const [liveFavorites, setLiveFavorites] = useState(Math.floor(Math.random() * 15) + 5);
+  const [liveViewers, setLiveViewers] = useState(3);
+  const [liveFavorites, setLiveFavorites] = useState(0);
+
+  useEffect(() => {
+    if (auto) {
+        let date = new Date();
+        if (auto.createdAt?.toDate) date = auto.createdAt.toDate();
+        else if (auto.createdAt?.seconds) date = new Date(auto.createdAt.seconds * 1000);
+        else if (auto.createdAt) date = new Date(auto.createdAt);
+        
+        let hash = 0;
+        const idStr = auto.id || 'auto';
+        for (let i = 0; i < idStr.length; i++) hash = Math.imul(31, hash) + idStr.charCodeAt(i) | 0;
+        const seed = Math.abs(hash) / 2147483647;
+        
+        const ageMins = (Date.now() - date.getTime()) / 60000;
+        
+        const maxViews = 15 + Math.floor(seed * 20);
+        const minsPerView = 2 + (seed * 4);
+        const baseViews = Math.max(3, Math.min(maxViews, Math.floor(ageMins / minsPerView)));
+        setLiveViewers(baseViews);
+        
+        if (ageMins < 10) {
+           setLiveFavorites(0);
+        } else {
+           const maxFavs = 5 + Math.floor(seed * 15);
+           const minsPerFav = 15 + (seed * 30);
+           const calculatedFavs = Math.floor((ageMins - 10) / minsPerFav);
+           setLiveFavorites(Math.min(maxFavs, calculatedFavs));
+        }
+    }
+  }, [auto]);
+
   useEffect(() => {
     const viewerInterval = setInterval(() => {
       setLiveViewers(prev => {
@@ -124,10 +155,7 @@ export default function AutoDetailsPage() {
         return Math.max(2, Math.min(18, prev + change));
       });
     }, Math.floor(Math.random() * 4000) + 4000);
-    const favInterval = setInterval(() => {
-      setLiveFavorites(prev => prev + 1);
-    }, Math.floor(Math.random() * 20000) + 25000);
-    return () => { clearInterval(viewerInterval); clearInterval(favInterval); };
+    return () => clearInterval(viewerInterval);
   }, []);
   if (loading) {
     return (

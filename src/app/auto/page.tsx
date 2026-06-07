@@ -5,10 +5,40 @@ import { Loader2 } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: 'Catálogo de Coches y Vehículos',
-  description: 'Explora nuestra selección de coches de lujo y vehículos en venta.',
-};
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+
+export async function generateMetadata(): Promise<Metadata> {
+  let siteName = 'Vindu24';
+  let desc = 'Descoperă zeci de mii de oferte cu mașini second-hand, autoturisme noi și camioane pe Vindu24. Cele mai bune prețuri la auto.';
+  
+  try {
+    const seoDoc = await getDoc(doc(db, 'settings', 'seo'));
+    if (seoDoc.exists()) {
+      const data = seoDoc.data();
+      if (data.siteName) siteName = data.siteName;
+    }
+  } catch (e) {
+    console.error('Error fetching SEO in auto/page.tsx', e);
+  }
+
+  const title = `Auto - Anunțuri mașini second-hand și noi | ${siteName}`;
+
+  return {
+    title,
+    description: desc,
+    keywords: 'auto, masini, auto rulate, masini second hand, camioane, motociclete, vindu24',
+    openGraph: {
+      title,
+      description: desc,
+      type: 'website',
+      url: 'https://vindu24.ro/auto',
+    },
+    alternates: {
+      canonical: 'https://vindu24.ro/auto',
+    }
+  };
+}
 
 export default function AutoPage() {
   return (

@@ -115,9 +115,51 @@ async function getPropertyData(slug: string) {
       description: d.description ? d.description.substring(0, 100) + '...' : 'Fără descriere pentru acest anunț.',
       longDescription: d.description || 'Proprietarul nu a oferit o descriere detaliată pentru acest imobil.',
       amenities: (d.amenities as string[]) || [],
-      createdAt: d.createdAt?.toDate ? d.createdAt.toDate().toISOString() : (d.createdAt || new Date().toISOString()),
-      views: d.views || Math.floor(Math.random() * 200) + 20,
-      favoritesCount: d.favoritesCount || Math.floor(Math.random() * 15) + 5,
+      createdAt: (() => {
+        let date = new Date();
+        if (d.createdAt?.toDate) date = d.createdAt.toDate();
+        else if (d.createdAt?.seconds) date = new Date(d.createdAt.seconds * 1000);
+        else if (d.createdAt) date = new Date(d.createdAt);
+        return date.toISOString();
+      })(),
+      views: (() => {
+        if (d.views !== undefined && typeof d.views === 'number' && d.views > 0) return d.views;
+        let date = new Date();
+        if (d.createdAt?.toDate) date = d.createdAt.toDate();
+        else if (d.createdAt?.seconds) date = new Date(d.createdAt.seconds * 1000);
+        else if (d.createdAt) date = new Date(d.createdAt);
+        
+        let hash = 0;
+        const idStr = docId || 'prop';
+        for (let i = 0; i < idStr.length; i++) hash = Math.imul(31, hash) + idStr.charCodeAt(i) | 0;
+        const seed = Math.abs(hash) / 2147483647;
+        
+        const ageMins = (Date.now() - date.getTime()) / 60000;
+        const maxViews = 40 + Math.floor(seed * 160);
+        const minsPerView = 1 + (seed * 3);
+        const calculatedViews = Math.floor(ageMins / minsPerView);
+        return Math.max(3, Math.min(maxViews, calculatedViews));
+      })(),
+      favoritesCount: (() => {
+        if (d.favoritesCount !== undefined && typeof d.favoritesCount === 'number' && d.favoritesCount > 0) return d.favoritesCount;
+        let date = new Date();
+        if (d.createdAt?.toDate) date = d.createdAt.toDate();
+        else if (d.createdAt?.seconds) date = new Date(d.createdAt.seconds * 1000);
+        else if (d.createdAt) date = new Date(d.createdAt);
+        
+        let hash = 0;
+        const idStr = docId || 'prop';
+        for (let i = 0; i < idStr.length; i++) hash = Math.imul(31, hash) + idStr.charCodeAt(i) | 0;
+        const seed = Math.abs(hash) / 2147483647;
+        
+        const ageMins = (Date.now() - date.getTime()) / 60000;
+        if (ageMins < 10) return 0;
+        
+        const maxFavs = 5 + Math.floor(seed * 15);
+        const minsPerFav = 15 + (seed * 30); // 1 fav every 15-45 minutes
+        const calculatedFavs = Math.floor((ageMins - 10) / minsPerFav);
+        return Math.min(maxFavs, calculatedFavs);
+      })(),
       agent: {
         id: d.userId || d.uid || d.email || 'anonimo',
         email: d.email || '',
@@ -137,11 +179,42 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const property = await getPropertyData(slug);
   
-  if (!property) return { title: 'Proprietate negăsită' };
+  if (!property) return { title: 'Proprietate negăsită | Vindu24' };
  
+  const title = `${property.title} | Vindu24`;
+  const description = property.description ? (property.description.substring(0, 155) + '...') : `Descoperă această proprietate pe Vindu24. ${property.title} la doar ${property.price}€.`;
+  const image = property.images?.[0] || 'https://vindu24.ro/og-image.jpg';
+  const url = `https://vindu24.ro/propiedades/${slug}`;
+
   return {
-    title: property.title + ' | Vindu24',
-    description: property.description,
+    title,
+    description,
+    keywords: `${property.type}, ${property.operation}, imobiliare, ${property.location?.city || ''}, Vindu24, de vanzare, de inchiriat, anunturi imobiliare`,
+    openGraph: {
+      title,
+      description,
+      url,
+      type: 'website',
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: property.title,
+        }
+      ],
+      siteName: 'Vindu24',
+      locale: 'ro_RO',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [image],
+    },
+    alternates: {
+      canonical: url,
+    },
   };
 }
 
@@ -244,16 +317,44 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
     ? new Date(property.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' }) 
     : 'Recientemente';
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": property.type === 'casa' || property.type === 'vila' ? "SingleFamilyResidence" : "Apartment",
+    "name": property.title,
+    "description": property.description,
+    "url": `https://vindu24.ro/propiedades/${slug}`,
+    "image": property.images?.[0] || 'https://vindu24.ro/og-image.jpg',
+    "offers": {
+      "@type": "Offer",
+      "price": property.price,
+      "priceCurrency": "EUR",
+      "availability": "https://schema.org/InStock",
+      "url": `https://vindu24.ro/propiedades/${slug}`
+    },
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": property.location?.city || property.localitate || '',
+      "addressRegion": property.judet || '',
+      "addressCountry": "RO"
+    },
+    "numberOfRooms": property.rooms || 0
+  };
+
   return (
-    <div 
-      className="bg-[#f4f4f4] min-h-screen pt-[72px]"
-      style={{ 
-        backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.357-.13.72-.264 1.088-.402l1.768-.661C33.64 15.347 39.647 14 50 14c10.271 0 15.362 1.222 24.629 4.928.955.383 1.869.74 2.75 1.072h6.225c-2.51-.73-5.139-1.691-8.233-2.928C65.888 13.278 60.562 11 50 11c-10.639 0-16.035 2.333-25.753 5.928H0v3h21.184zM0 16.5c2.493-.726 5.12-1.688 8.214-2.922C16.88 10.457 21.6 8 30 8c8.397 0 13.12 2.457 21.786 5.578C54.88 14.812 57.507 15.773 60 16.5h40V0H0v16.5z' fill='%23000000' fill-opacity='0.025' fill-rule='evenodd'/%3E%3C/svg%3E\")",
-        backgroundSize: "80px 16px"
-      }}
-    >
-      <div className="bg-white w-full border-b border-gray-200 pb-12 pt-4">
-      <div className="container mx-auto px-6">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div 
+        className="bg-[#f4f4f4] min-h-screen pt-[72px]"
+        style={{ 
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='100' height='20' viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.357-.13.72-.264 1.088-.402l1.768-.661C33.64 15.347 39.647 14 50 14c10.271 0 15.362 1.222 24.629 4.928.955.383 1.869.74 2.75 1.072h6.225c-2.51-.73-5.139-1.691-8.233-2.928C65.888 13.278 60.562 11 50 11c-10.639 0-16.035 2.333-25.753 5.928H0v3h21.184zM0 16.5c2.493-.726 5.12-1.688 8.214-2.922C16.88 10.457 21.6 8 30 8c8.397 0 13.12 2.457 21.786 5.578C54.88 14.812 57.507 15.773 60 16.5h40V0H0v16.5z' fill='%23000000' fill-opacity='0.025' fill-rule='evenodd'/%3E%3C/svg%3E\")",
+          backgroundSize: "80px 16px"
+        }}
+      >
+        <div className="bg-white w-full border-b border-gray-200 pb-12 pt-4">
+        <div className="container mx-auto px-6">
         
         {/* Breadcrumbs & Top Actions */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
@@ -764,5 +865,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ slug:
         )}
       </div>
     </div>
+    </>
   );
 }

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getCountFromServer } from 'firebase/firestore';
 import { AUTO_MODELS, AUTO_BRANDS } from '@/constants/autoModels';
+import { ROMANIA_LOCATIONS } from '@/constants/romaniaCities';
 
 const POPULAR_BRANDS = [
   { name: 'AUDI', dbName: 'Audi', logo: 'https://www.carlogos.org/car-logos/audi-logo.png' },
@@ -33,7 +34,7 @@ export default function AutoSearchBar() {
   const [marca, setMarca] = useState('');
   const [model, setModel] = useState('');
   const [yearMin, setYearMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
+  const [location, setLocation] = useState('');
   
   const [brandCounts, setBrandCounts] = useState<Record<string, number>>({});
   const [modelCounts, setModelCounts] = useState<Record<string, number>>({});
@@ -45,6 +46,18 @@ export default function AutoSearchBar() {
 
   const [showModelDropdown, setShowModelDropdown] = useState(false);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
+
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
+
+  const filteredLocations = useMemo(() => {
+    if (!location) return ROMANIA_LOCATIONS.slice(0, 15);
+    const lowercaseQuery = location.toLowerCase();
+    return ROMANIA_LOCATIONS.filter(c => 
+      c.name.toLowerCase().includes(lowercaseQuery) || 
+      (c.county && c.county.toLowerCase().includes(lowercaseQuery))
+    ).slice(0, 15);
+  }, [location]);
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -80,12 +93,15 @@ export default function AutoSearchBar() {
       if (modelDropdownRef.current && !modelDropdownRef.current.contains(e.target as Node)) {
         setShowModelDropdown(false);
       }
+      if (locationDropdownRef.current && !locationDropdownRef.current.contains(e.target as Node)) {
+        setShowLocationDropdown(false);
+      }
     };
-    if (showBrandDropdown || showModelDropdown) {
+    if (showBrandDropdown || showModelDropdown || showLocationDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }
-  }, [showBrandDropdown, showModelDropdown]);
+  }, [showBrandDropdown, showModelDropdown, showLocationDropdown]);
 
   const filteredBrands = useMemo(() => {
     const matches = AUTO_BRANDS.filter(b => b.toLowerCase().includes(marca.toLowerCase()));
@@ -190,7 +206,7 @@ export default function AutoSearchBar() {
     if (marca) params.append('marca', marca.toLowerCase());
     if (model) params.append('model', model.toLowerCase());
     if (yearMin) params.append('an_min', yearMin);
-    if (priceMax) params.append('pret_max', priceMax);
+    if (location) params.append('location', location);
     
     router.push(`/auto?${params.toString()}`);
   };
@@ -414,16 +430,59 @@ export default function AutoSearchBar() {
 
           <div className="hidden md:block w-px h-10 bg-gray-200 my-auto"></div>
 
-          {/* Pret Max */}
-          <div className="flex-[0.7] relative flex items-center h-14 md:h-16 px-4 bg-gray-50 rounded-xl border border-transparent hover:border-[var(--primary)]/30 focus-within:bg-white focus-within:border-[var(--primary)] focus-within:ring-4 focus-within:ring-[var(--primary)]/10 transition-all group">
-            <span className="text-gray-400 font-bold text-lg group-focus-within:text-[var(--primary)]">€</span>
+          {/* Locatie */}
+          <div className="flex-[0.7] relative flex items-center h-14 md:h-16 px-4 bg-gray-50 rounded-xl border border-transparent hover:border-[var(--primary)]/30 focus-within:bg-white focus-within:border-[var(--primary)] focus-within:ring-4 focus-within:ring-[var(--primary)]/10 transition-all group" ref={locationDropdownRef}>
+            <MapPin size={20} className="text-gray-400 group-focus-within:text-[var(--primary)] shrink-0" />
             <input 
-              type="number"
-              placeholder="Preț max."
-              value={priceMax}
-              onChange={(e) => setPriceMax(e.target.value)}
+              type="text"
+              placeholder="Oraș (ex: București)"
+              value={location}
+              onChange={(e) => {
+                setLocation(e.target.value);
+                setShowLocationDropdown(true);
+              }}
+              onFocus={() => setShowLocationDropdown(true)}
               className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[15px] placeholder:font-medium placeholder:text-gray-400"
             />
+            {location && (
+              <button 
+                type="button"
+                onClick={() => setLocation('')} 
+                className="absolute right-4 text-gray-400 hover:text-gray-600 transition-colors p-1"
+                aria-label="Șterge orașul"
+              >
+                <X size={16} />
+              </button>
+            )}
+            {showLocationDropdown && (
+              <div className="absolute top-[calc(100%+8px)] left-0 right-0 md:min-w-[250px] bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.15)] border border-gray-200/60 py-2 z-[70] max-h-[300px] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200 custom-scrollbar">
+                {filteredLocations.length > 0 ? (
+                  filteredLocations.map((c, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        setLocation(c.name);
+                        setShowLocationDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50/80 flex items-center justify-between transition-colors group/item relative overflow-hidden"
+                    >
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--primary)] transform -translate-x-full group-hover/item:translate-x-0 transition-transform duration-300 ease-out" />
+                      <div className="flex items-center gap-3">
+                        <MapPin size={16} className="text-gray-400 group-hover/item:text-[var(--primary)] transition-colors shrink-0" />
+                        <span className="truncate text-[14px] font-bold text-slate-800">
+                          {c.name}
+                          {!c.isCounty && c.name !== c.county && (
+                            <span className="ml-1.5 text-gray-400 font-medium">{c.county}</span>
+                          )}
+                        </span>
+                      </div>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-4 py-3 text-[13px] text-gray-500 font-medium">Nu am găsit acest oraș.</div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Search Button */}

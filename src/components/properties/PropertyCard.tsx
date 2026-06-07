@@ -94,7 +94,7 @@ export default function PropertyCard({ property }: { property: Property }) {
               {property.status === 'for-sale' ? 'Vânzare' : 'Închiriere'}
             </span>
             {isNew && (
-              <span className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white text-[11px] font-bold px-3 py-1 rounded-lg shadow-sm w-fit">
+              <span className="bg-[#139E69] text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow-sm w-fit">
                 Nou
               </span>
             )}
@@ -168,7 +168,7 @@ export default function PropertyCard({ property }: { property: Property }) {
             {property.type === 'camera' ? 'Cameră de închiriat' : property.status === 'for-rent' ? 'De închiriat' : 'De vânzare'}
           </span>
           {isNew && (
-            <span className="bg-[#139E69]/30 backdrop-blur-md border border-[#139E69]/50 text-white px-3 py-1.5 text-[10px] font-bold rounded-full w-fit">
+            <span className="bg-[#139E69] text-white px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-md shadow-sm w-fit">
               Nou
             </span>
           )}

@@ -9,14 +9,14 @@ import { Search, CarFront, Calendar, Fuel, SlidersHorizontal, X, Loader2, Layout
 import Link from 'next/link';
 
 
-export default function AutoResultsContent() {
+export default function AutoResultsContent({ initialFilters }: { initialFilters?: { keyword?: string; location?: string } } = {}) {
   const searchParams = useSearchParams();
   const [allAutos, setAllAutos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Unified keyword search
   const [keyword, setKeyword] = useState(
-    searchParams.get('keyword') || [searchParams.get('marca'), searchParams.get('model'), searchParams.get('city')].filter(Boolean).join(' ')
+    initialFilters?.keyword || searchParams.get('keyword') || [searchParams.get('marca'), searchParams.get('model'), searchParams.get('city')].filter(Boolean).join(' ')
   );
   // Advanced filters
   const [yearMin, setYearMin] = useState(searchParams.get('an_min') || '');
@@ -25,7 +25,8 @@ export default function AutoResultsContent() {
   const [caroserie, setCaroserie] = useState(searchParams.get('caroserie') || '');
   const [transmisie, setTransmisie] = useState(searchParams.get('transmisie') || '');
   const [stare, setStare] = useState(searchParams.get('stare') || '');
-  const [location, setLocation] = useState(searchParams.get('location') || '');
+  const [domain, setDomain] = useState(searchParams.get('domain') || '');
+  const [location, setLocation] = useState(initialFilters?.location || searchParams.get('location') || '');
   const [priceMin, setPriceMin] = useState(searchParams.get('pret_min') || '');
   const [yearMax, setYearMax] = useState(searchParams.get('an_max') || '');
   const [showFilters, setShowFilters] = useState(false);
@@ -80,6 +81,7 @@ export default function AutoResultsContent() {
     syncParam('caroserie', caroserie);
     syncParam('transmisie', transmisie);
     syncParam('stare', stare);
+    syncParam('domain', domain);
     syncParam('location', location);
     syncParam('view', viewMode !== 'grid' ? viewMode : '');
     
@@ -92,7 +94,7 @@ export default function AutoResultsContent() {
     
     const newUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
     window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
-  }, [keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare, location, viewMode]);
+  }, [keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare, domain, location, viewMode]);
 
   // Helper to remove diacritics for robust searching
   const normalizeStr = (str: string) => {
@@ -121,10 +123,26 @@ export default function AutoResultsContent() {
       if (caroserie && (auto.caroserie || '').toLowerCase() !== caroserie.toLowerCase()) return false;
       if (transmisie && (auto.transmisie || '').toLowerCase() !== transmisie.toLowerCase()) return false;
       if (stare && (auto.stare || '').toLowerCase() !== stare.toLowerCase()) return false;
+      if (domain && (auto.domain || '').toLowerCase() !== domain.toLowerCase()) return false;
       if (location && !normalizeStr(auto.city).includes(normalizeStr(location))) return false;
       return true;
+    }).sort((a: any, b: any) => {
+      const getPriority = (d: any) => {
+        const pt = d.promoType || (d.isPromoted ? 'standard' : null);
+        if (pt === 'gold') return 3;
+        if (pt === 'standard') return 2;
+        if (pt === 'normal') return 1;
+        return 0;
+      };
+      const priorityA = getPriority(a);
+      const priorityB = getPriority(b);
+      if (priorityA !== priorityB) return priorityB - priorityA;
+      
+      const timeA = a.createdAt?.seconds ? a.createdAt.seconds : (a.createdAt || 0);
+      const timeB = b.createdAt?.seconds ? b.createdAt.seconds : (b.createdAt || 0);
+      return (new Date(timeB).getTime()) - (new Date(timeA).getTime());
     });
-  }, [allAutos, keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare, location]);
+  }, [allAutos, keyword, yearMin, yearMax, priceMin, priceMax, combustibil, caroserie, transmisie, stare, domain, location]);
 
   const clearAll = () => {
     setKeyword(''); setYearMin(''); setYearMax(''); setPriceMin(''); setPriceMax(''); setCombustibil(''); setCaroserie(''); setTransmisie(''); setStare(''); setLocation('');
