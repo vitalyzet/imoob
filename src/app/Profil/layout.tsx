@@ -89,12 +89,35 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
   }, [title]);
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pt-28 pb-20">
+    <div className="min-h-screen bg-[#F8F9FA] pt-28 pb-6 md:pb-20">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="flex flex-col md:flex-row gap-8 items-start">
           
-          {/* Sidebar Menu - Left (Optimized for Routing) */}
-          <aside className="w-full md:w-72 flex-shrink-0 sticky top-28">
+          {/* Mobile Navigation - Horizontal Scroll */}
+          <div className="md:hidden w-full mb-6 relative">
+            <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2 pt-1 custom-scrollbar px-1">
+              {[...activityItems, ...accountItems.filter(i => i.id !== 'logout')].map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href || '#'}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-[13px] font-bold transition-all flex-shrink-0 shadow-sm border ${
+                      isActive
+                        ? 'bg-[#f25c1a] border-[#f25c1a] text-white shadow-[0_4px_12px_rgba(242,92,26,0.3)]' 
+                        : 'bg-white border-gray-100 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <item.icon size={16} className={isActive ? 'text-white' : 'text-gray-400'} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Sidebar Menu - Left (Desktop Only) */}
+          <aside className="hidden md:block w-72 flex-shrink-0 sticky top-28">
             <div className="bg-gradient-to-br from-white to-gray-50 rounded-[30px] shadow-[0_10px_40px_rgba(0,0,0,0.03)] overflow-hidden p-3 border border-gray-200">
               
               {/* Category: ACTIVITATE */}
@@ -179,10 +202,10 @@ export default function ProfilLayout({ children }: { children: React.ReactNode }
           </aside>
 
           {/* Content Area - Right (Routed Content) */}
-          <main className="flex-grow relative">
+          <main className="flex-grow relative w-full max-w-full overflow-hidden md:overflow-visible">
             {/* Header Section */}
-            <div className="mb-8 text-left">
-              <h1 className="text-2xl md:text-[32px] font-black text-[#f25c1a] mb-2 leading-tight tracking-tight">
+            <div className="mb-6 md:mb-8 text-left">
+              <h1 className="text-xl md:text-[32px] font-black text-[#f25c1a] mb-1.5 md:mb-2 leading-tight tracking-tight">
                 {title}
               </h1>
               <div className="flex items-center gap-4">

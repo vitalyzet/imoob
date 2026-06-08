@@ -212,6 +212,18 @@ const AUTO_FEATURES = [
   "Lane Assist","Front Assist","Blind Spot Monitor","Cârlig remorcare"
 ];
 
+const MOTO_FEATURES = [
+  "ABS", "Traction Control", "Quickshifter", "Moduri de condus", "Manșoane încălzite",
+  "Parbriz", "Top Case", "Cutii laterale", "Scaun încălzit", "Sistem evacuare sport",
+  "Crash bar", "Proiectoare ceață", "Keyless GO", "Suspensie electronică", "Amortizor direcție"
+];
+
+const TRUCK_FEATURES = [
+  "ABS", "EBS", "Retarder/Intarder", "Tahograf digital", "Sistem de navigație",
+  "Aer condiționat", "Încălzire auxiliară (Webasto)", "Frigider", "Două paturi",
+  "Cruise control", "Suspensie pneumatică", "Faruri LED", "Trapă", "Cuplaj remorcă"
+];
+
 const stepsInfo = [
   { num: 1, title: 'Tip vehicul' },
   { num: 2, title: 'Specificații' },
@@ -291,6 +303,8 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
     combustibil: '', transmisie: '', caroserie: '',
     motor: '', putere: '', culoare: '', stare: 'Rulat', garantie: 'Fără garanție',
     nrLocuri: '', nrUsi: '', greutate: '', nrCilindri: '', tractiune: '',
+    consumCombinat: '', consumOras: '', consumAutostrada: '',
+    clasaEmisie: '', clasaCO2: '', insignaEcologica: '',
     tipVanzator: 'Particular' as 'Particular' | 'Firmă',
     price: '', pretNegociabil: false, inPromotie: false, city: '',
     description: '', features: [] as string[],
@@ -873,31 +887,97 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
                     </div>
                   </section>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                    <section>
-                      <h3 className="text-[13px] font-bold text-gray-800 mb-3">Număr uși <span className="text-gray-400 font-normal text-xs">(opțional)</span></h3>
-                      <div className="flex gap-2">
-                        {['2/3','4/5','6+'].map(u => (
-                          <button key={u} onClick={() => updateField('nrUsi', formData.nrUsi === u ? '' : u)}
-                            className={`flex-1 py-3 text-[13px] font-bold rounded-xl transition-all border ${
-                              formData.nrUsi === u ? 'bg-sky-500 text-white border-sky-500' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                            }`}>{u}</button>
-                        ))}
-                      </div>
-                    </section>
+                  {formData.domainType !== 'Moto' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+                      <section>
+                        <h3 className="text-[13px] font-bold text-gray-800 mb-3">Număr uși <span className="text-gray-400 font-normal text-xs">(opțional)</span></h3>
+                        <div className="flex gap-2">
+                          {['2/3','4/5','6+'].map(u => (
+                            <button key={u} onClick={() => updateField('nrUsi', formData.nrUsi === u ? '' : u)}
+                              className={`flex-1 py-3 text-[13px] font-bold rounded-xl transition-all border ${
+                                formData.nrUsi === u ? 'bg-sky-500 text-white border-sky-500' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                              }`}>{u}</button>
+                          ))}
+                        </div>
+                      </section>
 
-                    <section>
-                      <h3 className="text-[13px] font-bold text-gray-800 mb-3">Număr locuri <span className="text-gray-400 font-normal text-xs">(opțional)</span></h3>
-                      <div className="flex flex-wrap gap-2">
-                        {['2','4','5','7','8+'].map(l => (
-                          <button key={l} onClick={() => updateField('nrLocuri', formData.nrLocuri === l ? '' : l)}
-                            className={`flex-1 min-w-[40px] py-3 text-[13px] font-bold rounded-xl transition-all border ${
-                              formData.nrLocuri === l ? 'bg-sky-500 text-white border-sky-500' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
-                            }`}>{l}</button>
-                        ))}
+                      <section>
+                        <h3 className="text-[13px] font-bold text-gray-800 mb-3">Număr locuri <span className="text-gray-400 font-normal text-xs">(opțional)</span></h3>
+                        <div className="flex flex-wrap gap-2">
+                          {['2','4','5','7','8+'].map(l => (
+                            <button key={l} onClick={() => updateField('nrLocuri', formData.nrLocuri === l ? '' : l)}
+                              className={`flex-1 min-w-[40px] py-3 text-[13px] font-bold rounded-xl transition-all border ${
+                                formData.nrLocuri === l ? 'bg-sky-500 text-white border-sky-500' : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
+                              }`}>{l}</button>
+                          ))}
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  <hr className="border-gray-100 mt-5" />
+                  
+                  <section className="mt-5">
+                    <h3 className="text-[13px] font-bold text-gray-800 mb-3 flex items-center gap-2">
+                      <Fuel size={16} className="text-sky-500" />
+                      Consum și Emisii <span className="text-gray-400 font-normal text-xs">(opțional)</span>
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-5">
+                      <div>
+                        <label className={labelCls}>Consum combinat <span className="text-gray-400 font-normal text-xs">(l/100km)</span></label>
+                        <input type="text" placeholder="ex: 5.1" value={formData.consumCombinat}
+                          onChange={(e) => updateField('consumCombinat', e.target.value)} className={inputCls} />
                       </div>
-                    </section>
-                  </div>
+                      <div>
+                        <label className={labelCls}>Consum oraș <span className="text-gray-400 font-normal text-xs">(l/100km)</span></label>
+                        <input type="text" placeholder="ex: 6.7" value={formData.consumOras}
+                          onChange={(e) => updateField('consumOras', e.target.value)} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Consum autostradă <span className="text-gray-400 font-normal text-xs">(l/100km)</span></label>
+                        <input type="text" placeholder="ex: 4.2" value={formData.consumAutostrada}
+                          onChange={(e) => updateField('consumAutostrada', e.target.value)} className={inputCls} />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                      <div>
+                        <label className={labelCls}>Clasa de emisie</label>
+                        <select value={formData.clasaEmisie} onChange={(e) => updateField('clasaEmisie', e.target.value)} className={inputCls}>
+                          <option value="">Selectează...</option>
+                          <option value="Euro 1">Euro 1</option>
+                          <option value="Euro 2">Euro 2</option>
+                          <option value="Euro 3">Euro 3</option>
+                          <option value="Euro 4">Euro 4</option>
+                          <option value="Euro 5">Euro 5</option>
+                          <option value="Euro 6">Euro 6</option>
+                          <option value="Non-Euro">Non-Euro</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Clasa CO2</label>
+                        <select value={formData.clasaCO2} onChange={(e) => updateField('clasaCO2', e.target.value)} className={inputCls}>
+                          <option value="">Selectează...</option>
+                          <option value="A">A</option>
+                          <option value="B">B</option>
+                          <option value="C">C</option>
+                          <option value="D">D</option>
+                          <option value="E">E</option>
+                          <option value="F">F</option>
+                          <option value="G">G</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Insignă ecologică</label>
+                        <select value={formData.insignaEcologica} onChange={(e) => updateField('insignaEcologica', e.target.value)} className={inputCls}>
+                          <option value="">Selectează...</option>
+                          <option value="1 (Niciuna)">1 (Niciuna)</option>
+                          <option value="2 (Roșu)">2 (Roșu)</option>
+                          <option value="3 (Galben)">3 (Galben)</option>
+                          <option value="4 (Verde)">4 (Verde)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </section>
                 </div>
               )}
 
@@ -906,10 +986,10 @@ export default function AutoPublishForm({ editId }: { editId?: string }) {
                 <div className="space-y-8">
                   <header>
                     <h1 className="text-[22px] font-black text-[#1a1a2e] mb-1">Dotări și echipamente</h1>
-                    <p className="text-gray-500 text-[14px]">Bifează opțiunile pe care le are mașina ta.</p>
+                    <p className="text-gray-500 text-[14px]">Bifează opțiunile pe care le are vehiculul tău.</p>
                   </header>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
-                    {AUTO_FEATURES.map((feature) => {
+                    {(formData.domainType === 'Moto' ? MOTO_FEATURES : formData.domainType === 'Camioane' ? TRUCK_FEATURES : AUTO_FEATURES).map((feature) => {
                       const isOn = formData.features.includes(feature);
                       return (
                         <button key={feature} onClick={() => toggleFeature(feature)}

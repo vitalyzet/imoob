@@ -123,7 +123,7 @@ export default function PublicarAnuncio() {
               Auto
             </h2>
             <p className="text-[14px] text-gray-500 font-medium leading-relaxed mb-8">
-              Autoturisme, SUV-uri, mașini de lux, motociclete sau autoutilitare premium.
+              Autoturisme, SUV-uri, mașini de lux, motociclete sau camioane.
             </p>
 
             {/* Stats */}

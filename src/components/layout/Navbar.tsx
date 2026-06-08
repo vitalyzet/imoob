@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Car, Building2, Mail, MessageSquare, FolderSearch, Heart, User, Menu, X, ChevronLeft, Search, Trash2, ChevronDown, Clock, XCircle, LayoutGrid, Phone, ThumbsUp, PlusSquare, List, Wallet, Settings, LogOut, Bell } from 'lucide-react';
@@ -21,6 +21,23 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const userPanelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (
+        isOpen &&
+        userPanelRef.current &&
+        !userPanelRef.current.contains(target) &&
+        !target.closest('[data-user-trigger="true"]')
+      ) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   const handleDomainChange = (targetDomain: 'imobiliare' | 'auto') => {
     setDomain(targetDomain);
@@ -183,14 +200,15 @@ export default function Navbar() {
 
     return (
       <motion.div
+        ref={userPanelRef}
         initial={{ opacity: 0, y: 10, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, y: 10, scale: 0.95 }}
         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="absolute top-full right-0 mt-4 w-[580px] bg-black/80 backdrop-blur-xl shadow-2xl flex flex-row z-[100] rounded-[30px] overflow-hidden p-3 border border-white/10"
+        className="absolute top-full right-4 md:right-0 mt-4 w-[calc(100vw-32px)] md:w-[580px] max-h-[80vh] md:max-h-none overflow-y-auto custom-scrollbar bg-black/90 md:bg-black/80 backdrop-blur-xl shadow-2xl flex flex-col md:flex-row z-[100] rounded-[24px] md:rounded-[30px] p-3 border border-white/10"
       >
         {/* Left Column: Activity */}
-        <div className="flex-[1.2] flex flex-col border-r border-white/5 pr-2">
+        <div className="flex-[1.2] flex flex-col border-b md:border-b-0 md:border-r border-white/10 pb-2 md:pb-0 md:pr-2 mb-2 md:mb-0">
           <div className="px-5 py-3 mb-1">
             <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-[2px]">Activitate</h4>
           </div>
@@ -213,7 +231,7 @@ export default function Navbar() {
         </div>
 
         {/* Right Column: Account */}
-        <div className="flex-1 flex flex-col pl-2">
+        <div className="flex-1 flex flex-col md:pl-2 pt-2 md:pt-0">
           <div className="px-5 py-3 mb-1">
             <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-[2px]">Contul meu</h4>
           </div>
@@ -396,6 +414,7 @@ export default function Navbar() {
               <div 
                 className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity ml-2"
                 onClick={() => setIsOpen(!isOpen)}
+                data-user-trigger="true"
               >
                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center overflow-hidden text-[#f25c1a]">
                   <User size={18} strokeWidth={2} />
@@ -446,37 +465,41 @@ export default function Navbar() {
             <Logo size="md" dark={textColor === 'text-white'} />
           </Link>
           
-          {/* Domain Switcher Premium */}
-          <div className="hidden md:flex bg-gray-100/70 backdrop-blur-lg p-1.5 rounded-full relative items-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] border border-gray-200/50">
-            {/* Animación elástica del indicador */}
-            <div
-              className={`absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-[0_3px_12px_-2px_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.05)] border border-gray-100/80 transition-all duration-500 ${
-                domain === 'imobiliare' ? 'left-1.5' : 'left-[calc(50%+4px)]'
-              }`}
-              style={{ transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }}
-            />
-            
+          {/* Domain Switcher Minimalist */}
+          <div className={`hidden md:flex p-1 rounded-full items-center gap-1 transition-all duration-300 ${
+            textColor === 'text-white' 
+              ? 'bg-white/10 backdrop-blur-md border border-white/5' 
+              : 'bg-gray-100 border border-gray-200/50'
+          }`}>
             <button
               onClick={() => handleDomainChange('imobiliare')}
-              className={`relative z-10 flex items-center justify-center gap-2 px-6 py-2.5 text-[12px] font-black tracking-[1px] transition-all duration-300 ${
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-[12px] font-bold tracking-wide transition-all duration-300 ${
                 domain === 'imobiliare' 
-                  ? 'text-slate-800' 
-                  : 'text-gray-400/80 hover:text-gray-500'
+                  ? textColor === 'text-white'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'bg-white text-[var(--primary)] shadow-sm'
+                  : textColor === 'text-white'
+                    ? 'text-white/70 hover:text-white hover:bg-white/5'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               }`}
             >
-              <Building2 size={16} strokeWidth={domain === 'imobiliare' ? 2.5 : 2} className={domain === 'imobiliare' ? 'text-[var(--primary)]' : ''} /> 
+              <Building2 size={16} strokeWidth={2} /> 
               IMOBILIARE
             </button>
             
             <button
               onClick={() => handleDomainChange('auto')}
-              className={`relative z-10 flex items-center justify-center gap-2 px-6 py-2.5 text-[12px] font-black tracking-[1px] transition-all duration-300 ${
+              className={`flex items-center gap-2 px-5 py-2 rounded-full text-[12px] font-bold tracking-wide transition-all duration-300 ${
                 domain === 'auto' 
-                  ? 'text-slate-800' 
-                  : 'text-gray-400/80 hover:text-gray-500'
+                  ? textColor === 'text-white'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'bg-white text-[#0ea5e9] shadow-sm'
+                  : textColor === 'text-white'
+                    ? 'text-white/70 hover:text-white hover:bg-white/5'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               }`}
             >
-              <Car size={16} strokeWidth={domain === 'auto' ? 2.5 : 2} className={domain === 'auto' ? 'text-[#0ea5e9]' : ''} /> 
+              <Car size={16} strokeWidth={2} /> 
               AUTO
             </button>
           </div>
@@ -588,6 +611,7 @@ export default function Navbar() {
             <div 
               className="flex items-center gap-3 ml-2 cursor-pointer hover:opacity-80 transition-opacity"
               onClick={() => setIsOpen(!isOpen)}
+              data-user-trigger="true"
             >
               <div className={`w-9 h-9 rounded-full flex items-center justify-center overflow-hidden border border-white/20 bg-emerald-500`}>
                 <User size={20} className={`text-white`} strokeWidth={2} />
@@ -626,36 +650,53 @@ export default function Navbar() {
             href="/publicar-anuncio"
             className="ml-4 bg-[#574188] hover:bg-[#483570] text-white px-5 py-2 rounded-sm transition-all flex flex-col items-center shadow-sm"
           >
-            <span className="text-sm font-bold leading-tight">Publica tu anuncio</span>
-            <span className="text-[11px] font-light leading-tight">¡es gratis!</span>
+            <span className="text-sm font-bold leading-tight">Adaugă anunț</span>
+            <span className="text-[11px] font-light leading-tight">e gratuit!</span>
           </Link>
         </nav>
  
-        {/* Mobile Toggle & Domain */}
-        <div className="flex lg:hidden items-center gap-4">
-          <div className="flex bg-gray-100/50 p-1 rounded-full relative items-center cursor-pointer shadow-inner">
-            <div
-              className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-full shadow-sm transition-all duration-300 ease-out ${
-                domain === 'imobiliare' ? 'left-1' : 'left-[calc(50%+3px)]'
-              }`}
-            />
+          {/* Mobile Toggle & Domain Minimalist */}
+          <div className="flex lg:hidden items-center gap-4">
+            <div className={`flex p-1 rounded-full items-center gap-1 transition-all duration-300 ${
+            textColor === 'text-white' 
+              ? 'bg-white/10 backdrop-blur-md border border-white/5' 
+              : 'bg-gray-100 border border-gray-200/50'
+          }`}>
             <button
               onClick={() => handleDomainChange('imobiliare')}
-              className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                domain === 'imobiliare' ? 'text-[var(--primary)]' : 'text-gray-400'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide transition-all duration-300 ${
+                domain === 'imobiliare' 
+                  ? textColor === 'text-white'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'bg-white text-[var(--primary)] shadow-sm'
+                  : textColor === 'text-white'
+                    ? 'text-white/70 hover:text-white hover:bg-white/5'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               }`}
             >
-              <Building2 size={16} />
+              <Building2 size={14} strokeWidth={2} /> 
+              IMOBILIARE
             </button>
             <button
               onClick={() => handleDomainChange('auto')}
-              className={`relative z-10 flex items-center justify-center w-8 h-8 rounded-full transition-colors ${
-                domain === 'auto' ? 'text-[var(--primary)]' : 'text-gray-400'
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold tracking-wide transition-all duration-300 ${
+                domain === 'auto' 
+                  ? textColor === 'text-white'
+                    ? 'bg-white text-slate-900 shadow-sm'
+                    : 'bg-white text-[#0ea5e9] shadow-sm'
+                  : textColor === 'text-white'
+                    ? 'text-white/70 hover:text-white hover:bg-white/5'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50'
               }`}
             >
-              <Car size={16} />
+              <Car size={14} strokeWidth={2} /> 
+              AUTO
             </button>
           </div>
+          
+          <Link href="/publicar-anuncio" className="bg-[#f25c1a] text-white p-1.5 rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center justify-center">
+            <PlusSquare size={18} strokeWidth={2.5} />
+          </Link>
           
           <Link href="/Profil/messages" className={`${textColor} relative group`}>
             <MessageSquare size={20} />
@@ -672,6 +713,7 @@ export default function Navbar() {
             <div 
               className={`flex items-center gap-2 cursor-pointer transition-opacity ${textColor}`}
               onClick={() => setIsOpen(!isOpen)}
+              data-user-trigger="true"
             >
               <User size={24} />
             </div>

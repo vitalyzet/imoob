@@ -6,7 +6,7 @@ import { db } from '@/lib/firebase';
 import { collection, query, where, getCountFromServer } from 'firebase/firestore';
 import { AUTO_MODELS, AUTO_BRANDS, MOTO_MODELS, MOTO_BRANDS, VAN_MODELS, VAN_BRANDS, TRUCK_MODELS, TRUCK_BRANDS } from '@/constants/autoModels';
 import { ROMANIA_LOCATIONS } from '@/constants/romaniaCities';
-import { CarFront, Calendar, Search, Car, MapPin, Bike, Truck } from 'lucide-react';
+import { CarFront, Calendar, Search, Car, MapPin, Bike, Truck, CheckCircle2, X } from 'lucide-react';
 
 const POPULAR_BRANDS = [
   { name: 'AUDI', dbName: 'Audi', logo: 'https://www.carlogos.org/car-logos/audi-logo.png' },
@@ -57,8 +57,21 @@ export default function ClassicAutoSearch() {
   const [yearMin, setYearMin] = useState('');
   const [transmission, setTransmission] = useState('');
   
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('auto-category-changed', { detail: category }));
+  }, [category]);
+  
   const [brandSearch, setBrandSearch] = useState('');
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+  const filteredCities = useMemo(() => {
+    if (!city) return ROMANIA_LOCATIONS.slice(0, 15);
+    const lowercaseQuery = city.toLowerCase();
+    return ROMANIA_LOCATIONS.filter(c => 
+      c.name.toLowerCase().includes(lowercaseQuery) || 
+      (c.county && c.county.toLowerCase().includes(lowercaseQuery))
+    ).slice(0, 15);
+  }, [city]);
   
   const [brandCounts, setBrandCounts] = useState<Record<string, number>>({});
   const [totalResults, setTotalResults] = useState<number | null>(null);
@@ -73,7 +86,17 @@ export default function ClassicAutoSearch() {
         ];
         if (marca) conditions.push(where('marca', '==', marca));
         if (model) conditions.push(where('model', '==', model));
-        if (city) conditions.push(where('city', '==', city));
+        const cleanCity = city ? city.split(',')[0].trim() : '';
+        if (cleanCity) {
+          const variations = Array.from(new Set([
+            cleanCity,
+            city,
+            cleanCity.toLowerCase(),
+            city.toLowerCase()
+          ]));
+          conditions.push(where('city', 'in', variations));
+        }
+        if (yearMin) conditions.push(where('anFabricatie', '>=', Number(yearMin)));
         if (transmission) conditions.push(where('transmisie', '==', transmission));
         
         const q = query(collection(db, 'anuncios_auto'), ...conditions);
@@ -84,7 +107,7 @@ export default function ClassicAutoSearch() {
       }
     };
     fetchTotalResults();
-  }, [marca, model, city, transmission, category]);
+  }, [marca, model, city, transmission, category, yearMin]);
 
   useEffect(() => {
     const fetchCounts = async () => {
@@ -181,7 +204,8 @@ export default function ClassicAutoSearch() {
     const params = new URLSearchParams();
     if (marca) params.append('marca', marca.toLowerCase());
     if (model) params.append('model', model.toLowerCase());
-    if (city) params.append('city', city);
+    const cleanCity = city ? city.split(',')[0].trim() : '';
+    if (cleanCity) params.append('city', cleanCity);
     if (yearMin) params.append('an_min', yearMin);
     if (transmission) params.append('transmisie', transmission);
     if (category === 'Motociclete') params.append('domain', 'moto');
@@ -192,14 +216,14 @@ export default function ClassicAutoSearch() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row shadow-2xl rounded-xl overflow-hidden backdrop-blur-2xl bg-black/25 border border-white/10 pointer-events-auto">
+    <div className="w-full max-w-5xl mx-auto flex flex-col md:flex-row shadow-2xl rounded-xl backdrop-blur-2xl bg-black/25 border border-white/10 pointer-events-auto">
       
       {/* Column 1: Categories */}
-      <div className="flex-1 border-b md:border-b-0 md:border-r border-white/10">
-        <div className="p-3 border-b border-white/10 bg-white/5">
+      <div className="flex-1 md:flex-[0.7] border-b md:border-b-0 md:border-r border-white/10">
+        <div className="p-3 border-b border-white/10 bg-white/5 hidden md:block">
           <span className="text-white font-semibold text-sm px-3">Vehicul</span>
         </div>
-        <ul className="h-64 overflow-y-auto no-scrollbar py-2 custom-scrollbar">
+        <ul className="flex overflow-x-auto md:h-[19rem] md:flex-col md:overflow-y-auto no-scrollbar py-2 md:py-2 px-2 md:px-0 gap-2 md:gap-0 custom-scrollbar">
           {['Autoturisme', 'Motociclete', 'Camioane'].map((item) => {
             const getIcon = (cat: string) => {
               switch(cat) {
@@ -210,20 +234,20 @@ export default function ClassicAutoSearch() {
               }
             };
             return (
-              <li key={item}>
+              <li key={item} className="shrink-0 md:shrink">
                 <button 
                   onClick={() => {
                     setCategory(item);
                     setMarca('');
                     setModel('');
                   }}
-                  className={`w-full flex items-center gap-3 px-6 py-2.5 text-sm transition-colors ${
+                  className={`w-full flex items-center justify-center md:justify-start gap-2 md:gap-3 px-4 md:px-6 py-2.5 text-[13px] md:text-sm transition-all rounded-full md:rounded-none ${
                     category === item 
-                      ? 'bg-[var(--primary)]/20 text-[#5ae4c0] font-medium border-l-3 border-[#5ae4c0]' 
-                      : 'text-white hover:bg-white/10'
+                      ? 'bg-[var(--primary)] md:bg-[var(--primary)]/20 text-white md:text-[#5ae4c0] font-bold md:font-medium md:border-l-3 md:border-[#5ae4c0]' 
+                      : 'bg-white/5 md:bg-transparent text-white hover:bg-white/10'
                   }`}
                 >
-                  <span className={category === item ? "text-[#5ae4c0]" : "text-white/50"}>
+                  <span className={category === item ? "text-white md:text-[#5ae4c0]" : "text-white/50"}>
                     {getIcon(item)}
                   </span>
                   {item}
@@ -234,18 +258,83 @@ export default function ClassicAutoSearch() {
         </ul>
       </div>
 
-      {/* Column 2: Brands */}
-      <div className="flex-[1.5] border-b md:border-b-0 md:border-r border-white/10 h-64 flex flex-col">
-        <div className="p-3 border-b border-white/10 shrink-0">
-          <div className="relative">
+      {/* Column 2: Brands (Desktop only) */}
+      <div className="hidden md:flex flex-[1.7] border-r border-white/10 h-[19rem] flex-col">
+        <div className="p-3 border-b border-white/10 shrink-0 flex gap-2">
+          <div className="relative flex-[1.2]">
             <CarFront size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
             <input
               type="text"
               placeholder="Caută marca..."
-              value={brandSearch}
-              onChange={(e) => setBrandSearch(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-9 pr-3 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-[#5ae4c0] transition-colors"
+              value={marca || brandSearch}
+              onChange={(e) => {
+                setBrandSearch(e.target.value);
+                if (marca) {
+                  setMarca('');
+                  setModel('');
+                }
+              }}
+              className="w-full h-full bg-white/5 border border-white/10 rounded-lg py-3 pl-9 pr-8 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-[#5ae4c0] transition-colors"
             />
+            {marca && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMarca('');
+                  setModel('');
+                  setBrandSearch('');
+                }}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+              >
+                <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+              </button>
+            )}
+          </div>
+          <div className="relative flex-1">
+            <select 
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              disabled={!marca}
+              className="w-full h-full bg-white/5 border border-white/10 rounded-lg py-3 pl-3 pr-8 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors disabled:opacity-50 appearance-none"
+            >
+              <option value="" className="text-gray-800">Toate modelele</option>
+              {availableModels.map(m => (
+                <option key={m} value={m} className="text-gray-800">{m}</option>
+              ))}
+            </select>
+            {model && (
+              <button
+                type="button"
+                onClick={() => setModel('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+              >
+                <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+              </button>
+            )}
+          </div>
+          <div className="relative flex-[0.8]">
+            <select 
+              value={yearMin}
+              onChange={(e) => setYearMin(e.target.value)}
+              className="w-full h-full bg-white/5 border border-white/10 rounded-lg py-3 pl-3 pr-8 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors appearance-none"
+            >
+              <option value="" className="text-gray-800">An Minim</option>
+              {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i).map(y => (
+                <option key={y} value={y} className="text-gray-800">{y}</option>
+              ))}
+            </select>
+            {yearMin && (
+              <button
+                type="button"
+                onClick={() => setYearMin('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+              >
+                <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+              </button>
+            )}
           </div>
         </div>
         <ul className="flex-1 overflow-y-auto no-scrollbar py-2 custom-scrollbar">
@@ -303,77 +392,150 @@ export default function ClassicAutoSearch() {
       </div>
 
       {/* Column 3: Filters & Action */}
-      <div className="flex-[1.5] h-64 flex flex-col relative">
-        <div className="flex-1 p-4 space-y-4 overflow-y-auto custom-scrollbar">
+      <div className="flex-[1.5] md:h-[19rem] flex flex-col relative">
+        <div className="flex-1 flex flex-col relative z-10">
           
-          {/* Model */}
-          <div className="space-y-1.5">
-            <label className="text-[11px] text-white/60 font-bold uppercase tracking-wider">Model</label>
-            <select 
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              disabled={!marca}
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-3 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors disabled:opacity-50 appearance-none"
-            >
-              <option value="" className="text-gray-800">Toate modelele</option>
-              {availableModels.map(m => (
-                <option key={m} value={m} className="text-gray-800">{m}</option>
-              ))}
-            </select>
+          <div className="flex gap-4 shrink-0 mb-4 md:hidden p-4 pb-0">
+            {/* Marca (Mobile Only) */}
+            <div className="flex-1 space-y-1.5 md:hidden">
+              <div className="relative">
+                <select 
+                  value={marca}
+                  onChange={(e) => {
+                    setMarca(e.target.value);
+                    setModel('');
+                  }}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-3 pr-8 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors appearance-none"
+                >
+                <option value="" className="text-gray-800">Toate mărcile</option>
+                {filteredBrands.map(b => (
+                  <option key={b.name} value={b.name} className="text-gray-800">
+                    {b.name} {brandCounts[b.name] !== undefined ? `(${brandCounts[b.name]})` : ''}
+                  </option>
+                ))}
+              </select>
+                {marca && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMarca('');
+                      setModel('');
+                      setBrandSearch('');
+                    }}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+                  >
+                    <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                    <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Model */}
+            <div className="flex-1 space-y-1.5 md:hidden">
+              <div className="relative">
+                <select 
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  disabled={!marca}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 md:py-2.5 pl-3 pr-8 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors disabled:opacity-50 appearance-none"
+                >
+                <option value="" className="text-gray-800">Toate modelele</option>
+                {availableModels.map(m => (
+                  <option key={m} value={m} className="text-gray-800">{m}</option>
+                ))}
+              </select>
+                {model && (
+                  <button
+                    type="button"
+                    onClick={() => setModel('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+                  >
+                    <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                    <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
 
-          <div className="flex gap-4">
-            {/* Year */}
-            <div className="flex-[0.8] space-y-1.5">
-              <label className="text-[11px] text-white/60 font-bold uppercase tracking-wider">An Minim</label>
-              <select 
-                value={yearMin}
-                onChange={(e) => setYearMin(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-3 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors appearance-none"
-              >
-                <option value="" className="text-gray-800">Oricare</option>
+          <div className="flex gap-4 shrink-0 p-4 pt-0 md:p-3 md:border-b md:border-white/10 md:gap-2">
+            {/* Year (Mobile Only) */}
+            <div className="flex-[0.5] space-y-1.5 md:hidden">
+              <div className="relative">
+                <select 
+                  value={yearMin}
+                  onChange={(e) => setYearMin(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-3 pr-8 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors appearance-none"
+                >
+                <option value="" className="text-gray-800">Oricare an</option>
                 {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i).map(y => (
                   <option key={y} value={y} className="text-gray-800">{y}</option>
                 ))}
               </select>
+                {yearMin && (
+                  <button
+                    type="button"
+                    onClick={() => setYearMin('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+                  >
+                    <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                    <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+                  </button>
+                )}
+              </div>
             </div>
             
-            {/* Transmission */}
+            {/* City Input */}
             <div className="flex-1 space-y-1.5">
-              <label className="text-[11px] text-white/60 font-bold uppercase tracking-wider">Transmisie</label>
-              <select 
-                value={transmission}
-                onChange={(e) => setTransmission(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 px-3 text-[13px] text-white focus:outline-none focus:border-[#5ae4c0] transition-colors appearance-none"
-              >
-                <option value="" className="text-gray-800">Oricare</option>
-                <option value="automata" className="text-gray-800">Automată</option>
-                <option value="manuala" className="text-gray-800">Manuală</option>
-              </select>
-            </div>
-
-            {/* City */}
-            <div className="flex-1 space-y-1.5">
-              <label className="text-[11px] text-white/60 font-bold uppercase tracking-wider">Locație</label>
               <div className="relative">
-                <MapPin size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/50" />
+                <MapPin size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
                 <input 
                   type="text"
-                  list="romania-cities"
                   placeholder="Caută orașul..."
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-lg py-2.5 pl-8 pr-3 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-[#5ae4c0] transition-colors"
+                  className="w-full h-full bg-white/5 border border-white/10 rounded-lg py-3 pl-9 pr-8 text-[13px] text-white placeholder:text-white/50 focus:outline-none focus:border-[#5ae4c0] transition-colors"
                 />
-                <datalist id="romania-cities">
-                  {ROMANIA_LOCATIONS.map((loc, index) => (
-                    <option key={`${loc.name}-${loc.county || index}-${index}`} value={loc.name}>
-                      {loc.name} {loc.isCounty ? '' : `(${loc.county})`}
-                    </option>
-                  ))}
-                </datalist>
+                {city && (
+                  <button
+                    type="button"
+                    onClick={() => setCity('')}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 group z-10"
+                  >
+                    <CheckCircle2 size={14} className="text-[#5ae4c0] group-hover:hidden transition-all" />
+                    <X size={14} className="text-white/50 hover:text-white hidden group-hover:block transition-all" />
+                  </button>
+                )}
               </div>
             </div>
+          </div>
+
+          {/* Locations List */}
+          <div className="flex-1 overflow-hidden relative md:mx-0 mx-[-1rem]">
+            <ul className="absolute inset-0 overflow-y-auto no-scrollbar py-2 custom-scrollbar border-t border-white/10 md:border-none">
+              {filteredCities.map((loc, index) => (
+                <li key={`${loc.name}-${loc.county || index}-${index}`}>
+                  <button
+                    type="button"
+                    onClick={() => setCity(`${loc.name}, ${loc.county}`)}
+                    className={`w-full text-left px-6 py-3 text-[14px] transition-colors flex items-center gap-3 border-b border-white/5 last:border-b-0 ${
+                      city.includes(loc.name)
+                        ? 'bg-[var(--primary)]/20 text-[#5ae4c0] font-medium border-l-3 border-[#5ae4c0]' 
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <MapPin size={16} className="text-[var(--primary)] shrink-0" />
+                    <span className="truncate">
+                      {loc.name}
+                      {!loc.isCounty && loc.name !== loc.county && (
+                        <span className="ml-1.5 opacity-50 font-normal">{loc.county}</span>
+                      )}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
 
         </div>
@@ -381,7 +543,7 @@ export default function ClassicAutoSearch() {
         {/* Action Button */}
         <button 
           onClick={handleSearch}
-          className="w-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white py-4 font-bold text-lg transition-colors flex items-center justify-center gap-2 mt-auto"
+          className="w-full bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white py-3.5 md:py-4 font-bold text-[15px] md:text-lg transition-colors flex items-center justify-center gap-2 mt-2 md:mt-auto rounded-b-xl md:rounded-bl-none md:rounded-br-xl"
         >
           CAUTĂ AUTO
           {totalResults !== null && (

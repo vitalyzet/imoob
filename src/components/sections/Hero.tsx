@@ -21,6 +21,7 @@ export default function Hero() {
   const [city, setCity] = useState(''); // Default to empty (no city selected)
   const [firebaseProperties, setFirebaseProperties] = useState<any[]>([]);
   const [searchMode, setSearchMode] = useState<'classic' | 'professional'>('classic');
+  const [autoCategory, setAutoCategory] = useState('Autoturisme');
   
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -30,9 +31,16 @@ export default function Hero() {
       const handleStyleChange = (e: CustomEvent) => {
         setSearchMode(e.detail);
       };
+      
+      const handleAutoCat = (e: CustomEvent) => {
+        setAutoCategory(e.detail);
+      };
+      
       window.addEventListener('card-style-changed', handleStyleChange as EventListener);
+      window.addEventListener('auto-category-changed', handleAutoCat as EventListener);
       return () => {
         window.removeEventListener('card-style-changed', handleStyleChange as EventListener);
+        window.removeEventListener('auto-category-changed', handleAutoCat as EventListener);
       };
     }
   }, []);
@@ -133,7 +141,7 @@ export default function Hero() {
       if (city) {
         const pCity = normalize(p.city || p.localitate || '');
         const pJudet = normalize(p.judet || '');
-        const targetCity = normalize(city).replace(/^judetul\s+/i, '').trim();
+        const targetCity = normalize(city).replace(/^judetul\s+/i, '').split(',')[0].trim();
         if (pCity !== targetCity && pJudet !== targetCity) return false;
       }
       
@@ -230,23 +238,43 @@ export default function Hero() {
             alt="Luxury Home Background" 
             fill
             priority
-            className="object-cover object-center opacity-20"
+            className="object-cover object-center opacity-40"
             sizes="100vw"
           />
         </div>
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${domain === 'auto' ? 'opacity-100' : 'opacity-0'}`}>
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${domain === 'auto' && autoCategory === 'Autoturisme' ? 'opacity-100' : 'opacity-0'}`}>
           <Image 
             src="https://images.unsplash.com/photo-1617531653332-bd46c24f2068?auto=format&fit=crop&q=60&w=1080" 
             alt="Luxury Car Background" 
             fill
             priority
-            className="object-cover object-center opacity-30"
+            className="object-cover object-center opacity-50"
             sizes="100vw"
           />
         </div>
-        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[var(--primary)] rounded-full blur-[120px] mix-blend-screen opacity-20"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[60%] bg-[#f25c1a] rounded-full blur-[120px] mix-blend-screen opacity-20"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-slate-900/40"></div>
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${domain === 'auto' && autoCategory === 'Motociclete' ? 'opacity-100' : 'opacity-0'}`}>
+          <Image 
+            src="https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=60&w=1080" 
+            alt="Motorcycle Background" 
+            fill
+            priority
+            className="object-cover object-center opacity-50"
+            sizes="100vw"
+          />
+        </div>
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${domain === 'auto' && autoCategory === 'Camioane' ? 'opacity-100' : 'opacity-0'}`}>
+          <Image 
+            src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=60&w=1080" 
+            alt="Truck Background" 
+            fill
+            priority
+            className="object-cover object-center opacity-50"
+            sizes="100vw"
+          />
+        </div>
+        <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-[var(--primary)] rounded-full blur-[120px] mix-blend-screen opacity-30"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[60%] bg-[#f25c1a] rounded-full blur-[120px] mix-blend-screen opacity-30"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/60 to-slate-900/20"></div>
       </div>
 
       <div className="container relative z-40 mx-auto px-6 h-full flex flex-col items-center justify-center pt-10 pb-32 pointer-events-none">
@@ -270,15 +298,18 @@ export default function Hero() {
           
           {/* Column 1: Operation */}
           <div className="flex-1 border-b md:border-b-0 md:border-r border-white/10">
-            <ul className="h-64 overflow-y-auto no-scrollbar py-2 custom-scrollbar">
+            <div className="p-3 border-b border-white/10 bg-white/5 hidden md:block">
+              <span className="text-white font-semibold text-sm px-3">Operațiune</span>
+            </div>
+            <ul className="flex overflow-x-auto md:h-64 md:flex-col md:overflow-y-auto no-scrollbar py-3 md:py-2 px-3 md:px-0 gap-2 md:gap-0 custom-scrollbar">
               {['Ansambluri noi', 'Cumpără', 'Închiriază', 'Afaceri'].map((item) => (
-                <li key={item}>
+                <li key={item} className="shrink-0 md:shrink">
                   <button 
                     onClick={() => handleOperationChange(item)}
-                    className={`w-full text-left px-6 py-2.5 text-sm transition-colors ${
+                    className={`w-full flex items-center justify-center md:justify-start px-5 md:px-6 py-2.5 text-[13px] md:text-sm transition-all rounded-full md:rounded-none ${
                       operation === item 
-                        ? 'bg-[var(--primary)]/20 text-[#28a975] font-medium border-l-3 border-[#139E69]' 
-                        : 'text-white hover:bg-white/10'
+                        ? 'bg-[var(--primary)] md:bg-[var(--primary)]/20 text-white md:text-[#5ae4c0] font-bold md:font-medium md:border-l-3 md:border-[#139E69]' 
+                        : 'bg-white/10 md:bg-transparent text-white/80 hover:bg-white/20 hover:text-white'
                     }`}
                   >
                     {item}
@@ -292,7 +323,7 @@ export default function Hero() {
           <div className="flex-[2] flex flex-col md:flex-row">
             
             {/* Column 2A: Property Types */}
-            <div className="flex-1 border-b md:border-b-0 md:border-r border-white/10 h-64 flex flex-col">
+            <div className="flex-1 border-b md:border-b-0 md:border-r border-white/10 h-48 md:h-64 flex flex-col">
               {operation === 'Ansambluri noi' ? (
                 <ul className="flex-1 overflow-y-auto no-scrollbar py-2 custom-scrollbar">
                   {['Locuințe', 'Birouri', 'Spații industriale'].map((item) => (
@@ -365,7 +396,7 @@ export default function Hero() {
             </div>
 
             {/* Column 2B: Location */}
-            <div className="flex-1 h-64 flex flex-col border-b md:border-b-0 relative">
+            <div className="flex-1 h-48 md:h-64 flex flex-col border-b md:border-b-0 relative">
               {/* Sticky Search Input for Classic Mode */}
               <div className="p-3 border-b border-white/10 shrink-0">
                 <div className="relative">

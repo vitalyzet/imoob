@@ -5,7 +5,8 @@ import { useSearchParams } from 'next/navigation';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import AutoCard from '@/components/properties/AutoCard';
-import { Search, CarFront, Calendar, Fuel, SlidersHorizontal, X, Loader2, LayoutGrid, List, MapPin, Gauge, Tag } from 'lucide-react';
+import AutoRowCard from '@/components/properties/AutoRowCard';
+import { Search, CarFront, Calendar, Fuel, SlidersHorizontal, X, Loader2, LayoutGrid, List, MapPin, Gauge, Tag, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 
 
@@ -152,6 +153,7 @@ export default function AutoResultsContent({ initialFilters }: { initialFilters?
 
   // Map auto data for AutoCard
   const mapForCard = (auto: any) => ({
+    ...auto,
     id: auto.id,
     slug: auto.slug || '',
     title: `${auto.marca || ''} ${auto.model || ''}`.trim() || 'Vehicul',
@@ -174,49 +176,58 @@ export default function AutoResultsContent({ initialFilters }: { initialFilters?
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto px-6 py-6">
 
-          {/* Unified Search Bar — only visible in grid mode */}
-          {viewMode === 'grid' && <div className="bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]/80 p-2 flex flex-col md:flex-row gap-2 mb-5">
-            <div className="flex-1 flex items-center gap-3 bg-white rounded-xl px-5 h-[56px] border-2 border-transparent focus-within:border-sky-400 focus-within:ring-4 focus-within:ring-sky-400/10 transition-all">
-              <Search size={20} className="text-[#94a3b8] shrink-0" />
-              <input
-                type="text"
-                placeholder="Caută: marcă, model, oraș, an... (ex: BMW Golf București 2020)"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                className="w-full bg-transparent border-none outline-none text-[#0f172a] font-bold text-[15px] placeholder:font-medium placeholder:text-[#94a3b8]"
-              />
-              {keyword && <button onClick={() => setKeyword('')} className="text-[#94a3b8] hover:text-[#334155] transition-colors"><X size={18} /></button>}
+          {/* Unified Search Bar & Filters — always visible on grid, visible on mobile for list */}
+          <div className={viewMode === 'list' ? 'block lg:hidden' : 'block'}>
+            <div className="bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]/80 p-2 flex flex-col md:flex-row gap-2 mb-5">
+              <div className="flex-1 flex items-center gap-3 bg-white rounded-xl px-5 h-[56px] border-2 border-transparent focus-within:border-sky-400 focus-within:ring-4 focus-within:ring-sky-400/10 transition-all shadow-sm">
+                <Search size={20} className="text-[#94a3b8] shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Caută: marcă, model, oraș, an..."
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none text-[#0f172a] font-bold text-[15px] placeholder:font-medium placeholder:text-[#94a3b8]"
+                />
+                {keyword && <button onClick={() => setKeyword('')} className="text-[#94a3b8] hover:text-[#334155] transition-colors"><X size={18} /></button>}
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`h-[56px] px-6 rounded-xl font-bold text-[13px] transition-all flex items-center justify-center md:justify-start gap-2 shrink-0 ${
+                  showFilters || yearMin || priceMax || combustibil
+                    ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
+                    : 'bg-white text-[#64748b] border border-[#e2e8f0] hover:bg-[#f1f5f9] shadow-sm'
+                }`}
+              >
+                <SlidersHorizontal size={15} />
+                Filtre avansate
+                {(yearMin || priceMax || combustibil) && <span className="w-5 h-5 bg-white/20 text-white rounded-full text-[10px] font-black flex items-center justify-center">{[yearMin, priceMax, combustibil].filter(Boolean).length}</span>}
+              </button>
             </div>
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`h-[56px] px-6 rounded-xl font-bold text-[13px] transition-all flex items-center gap-2 shrink-0 ${
-                showFilters || yearMin || priceMax || combustibil
-                  ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/20'
-                  : 'bg-white text-[#64748b] border border-[#e2e8f0] hover:bg-[#f1f5f9]'
-              }`}
-            >
-              <SlidersHorizontal size={15} />
-              Filtre avansate
-              {(yearMin || priceMax || combustibil) && <span className="w-5 h-5 bg-white/20 text-white rounded-full text-[10px] font-black flex items-center justify-center">{[yearMin, priceMax, combustibil].filter(Boolean).length}</span>}
-            </button>
-          </div>}
 
-          {/* Advanced Filters — only in grid mode */}
-          {viewMode === 'grid' && showFilters && (
-            <div className="bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]/80 p-5 mb-5 animate-in fade-in slide-in-from-top-4 duration-300">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {/* Advanced Filters */}
+            {showFilters && (
+              <div className="bg-[#f8fafc] rounded-2xl border border-[#e2e8f0]/80 p-5 mb-5 animate-in fade-in slide-in-from-top-4 duration-300 shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                   <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">An minim fabricație</label>
-                  <select
-                    value={yearMin}
-                    onChange={(e) => setYearMin(e.target.value)}
-                    className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none appearance-none"
-                  >
-                    <option value="">Orice an</option>
-                    {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i).map(y => (
-                      <option key={y} value={y}>{y}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={yearMin}
+                      onChange={(e) => setYearMin(e.target.value)}
+                      className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 pr-8 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none appearance-none"
+                    >
+                      <option value="">Orice an</option>
+                      {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                    {yearMin && (
+                      <button type="button" onClick={() => setYearMin('')} className="absolute right-3 top-1/2 -translate-y-1/2 group z-10">
+                        <CheckCircle2 size={15} className="text-sky-500 group-hover:hidden transition-all" />
+                        <X size={15} className="text-slate-400 hover:text-slate-600 hidden group-hover:block transition-all" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">Preț maxim</label>
@@ -226,48 +237,94 @@ export default function AutoResultsContent({ initialFilters }: { initialFilters?
                       placeholder="ex: 15.000"
                       value={priceMax}
                       onChange={(e) => setPriceMax(e.target.value)}
-                      className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 pr-10 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none"
+                      className="w-full bg-white border border-[#e2e8f0] rounded-xl pl-3.5 pr-10 py-3 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none"
                     />
-                    <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#94a3b8] font-bold text-[13px]">€</span>
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center z-10">
+                      {priceMax ? (
+                        <button type="button" onClick={() => setPriceMax('')} className="group flex items-center justify-center">
+                          <CheckCircle2 size={15} className="text-sky-500 group-hover:hidden transition-all" />
+                          <X size={15} className="text-slate-400 hover:text-slate-600 hidden group-hover:block transition-all" />
+                        </button>
+                      ) : (
+                        <span className="text-[#94a3b8] font-bold text-[13px]">€</span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">Combustibil</label>
-                  <select
-                    value={combustibil}
-                    onChange={(e) => setCombustibil(e.target.value)}
-                    className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none appearance-none"
-                  >
-                    <option value="">Orice combustibil</option>
-                    <option value="Benzină">Benzină</option>
-                    <option value="Diesel">Diesel</option>
-                    <option value="Hybrid">Hybrid</option>
-                    <option value="Plug-in Hybrid">Plug-in Hybrid</option>
-                    <option value="Electric">Electric</option>
-                    <option value="GPL">GPL</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={combustibil}
+                      onChange={(e) => setCombustibil(e.target.value)}
+                      className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 pr-8 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none appearance-none"
+                    >
+                      <option value="">Orice combustibil</option>
+                      <option value="Benzină">Benzină</option>
+                      <option value="Diesel">Diesel</option>
+                      <option value="Hybrid">Hybrid</option>
+                      <option value="Plug-in Hybrid">Plug-in Hybrid</option>
+                      <option value="Electric">Electric</option>
+                      <option value="GPL">GPL</option>
+                    </select>
+                    {combustibil && (
+                      <button type="button" onClick={() => setCombustibil('')} className="absolute right-3 top-1/2 -translate-y-1/2 group z-10">
+                        <CheckCircle2 size={15} className="text-sky-500 group-hover:hidden transition-all" />
+                        <X size={15} className="text-slate-400 hover:text-slate-600 hidden group-hover:block transition-all" />
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">Locație</label>
-                  <input
-                    type="text"
-                    placeholder="ex: București"
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      placeholder="ex: București"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 pr-8 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none"
+                    />
+                    {location && (
+                      <button type="button" onClick={() => setLocation('')} className="absolute right-3 top-1/2 -translate-y-1/2 group z-10">
+                        <CheckCircle2 size={15} className="text-sky-500 group-hover:hidden transition-all" />
+                        <X size={15} className="text-slate-400 hover:text-slate-600 hidden group-hover:block transition-all" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-wider mb-1.5 block">Transmisie</label>
+                  <div className="relative">
+                    <select
+                      value={transmisie}
+                      onChange={(e) => setTransmisie(e.target.value)}
+                      className="w-full bg-white border border-[#e2e8f0] rounded-xl px-3.5 py-3 pr-8 text-[13px] font-bold text-[#334155] focus:ring-2 focus:ring-sky-400 focus:border-transparent outline-none appearance-none"
+                    >
+                      <option value="">Oricare</option>
+                      <option value="Manuală">Manuală</option>
+                      <option value="Automată">Automată</option>
+                    </select>
+                    {transmisie && (
+                      <button type="button" onClick={() => setTransmisie('')} className="absolute right-3 top-1/2 -translate-y-1/2 group z-10">
+                        <CheckCircle2 size={15} className="text-sky-500 group-hover:hidden transition-all" />
+                        <X size={15} className="text-slate-400 hover:text-slate-600 hidden group-hover:block transition-all" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              {(yearMin || priceMax || combustibil || location) && (
+              {(yearMin || priceMax || combustibil || location || transmisie) && (
                 <button
-                  onClick={() => { setYearMin(''); setPriceMax(''); setCombustibil(''); setLocation(''); }}
+                  onClick={() => { setYearMin(''); setPriceMax(''); setCombustibil(''); setLocation(''); setTransmisie(''); }}
                   className="mt-4 flex items-center gap-1.5 text-[12px] text-[#94a3b8] hover:text-rose-400 font-semibold transition-colors"
                 >
                   <X size={13} /> Resetează filtrele avansate
                 </button>
               )}
             </div>
-          )}
+            )}
+          </div>
 
           {/* Results count + active pills + view toggle */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
@@ -512,41 +569,7 @@ export default function AutoResultsContent({ initialFilters }: { initialFilters?
                 </div>
               ) : filtered.map(auto => {
                 const d = mapForCard(auto);
-                return (
-                  <Link key={auto.id} href={`/auto/${auto.slug || auto.id}`} className="bg-white rounded-2xl border border-[#e2e8f0]/80 hover:border-sky-200 hover:shadow-lg transition-all flex overflow-hidden group relative">
-                    {/* Promotion Ribbon for List View */}
-                    {auto.promoType && (
-                      <div className="absolute top-4 left-0 z-20">
-                        <div className="bg-[#0ea5e9] text-white px-3 py-1.5 rounded-r-lg shadow-md flex items-center gap-1.5 font-bold text-[12px]">
-                          <Tag size={12} /> Promoción
-                        </div>
-                      </div>
-                    )}
-                    <div className="w-[260px] h-[180px] shrink-0 overflow-hidden bg-[#f1f5f9] relative">
-                      {d.image ? (
-                        <img src={d.image} alt={d.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><CarFront size={40} className="text-[#cbd5e1]" /></div>
-                      )}
-                    </div>
-                    <div className="flex-1 p-5 flex flex-col justify-between">
-                      <div>
-                        <h3 className="text-[17px] font-black text-[#0f172a] mb-1.5 group-hover:text-sky-600 transition-colors">{d.title}</h3>
-                        <div className="flex items-center gap-4 text-[12px] text-[#64748b] font-medium mb-3">
-                          {d.location && <span className="flex items-center gap-1"><MapPin size={12} className="text-[#94a3b8]" />{d.location}</span>}
-                          {d.year && <span className="flex items-center gap-1"><Calendar size={12} className="text-[#94a3b8]" />{d.year}</span>}
-                          {d.fuel && <span className="flex items-center gap-1"><Fuel size={12} className="text-[#94a3b8]" />{d.fuel}</span>}
-                          {d.mileage && d.mileage !== '—' && <span className="flex items-center gap-1"><Gauge size={12} className="text-[#94a3b8]" />{d.mileage} km</span>}
-                        </div>
-                        {d.transmission && <span className="inline-flex items-center bg-[#f1f5f9] text-[#475569] px-2.5 py-1 rounded-md text-[11px] font-bold">{d.transmission}</span>}
-                      </div>
-                      <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#f1f5f9]">
-                        <span className="text-[20px] font-black text-[#0f172a]">{d.price ? `${d.price.toLocaleString('ro-RO')} €` : '—'}</span>
-                        {d.pretNegociabil && <span className="text-[11px] font-bold text-emerald-500">Negociabil</span>}
-                      </div>
-                    </div>
-                  </Link>
-                );
+                return <AutoRowCard key={auto.id} auto={d} />;
               })}
             </div>
           </div>

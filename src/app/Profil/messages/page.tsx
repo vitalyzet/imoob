@@ -180,10 +180,10 @@ function MessagesContent() {
   const selectedChat = chats.find(c => c.id === selectedChatId);
 
   return (
-    <div className="bg-white rounded-[20px] overflow-hidden border border-gray-200 shadow-sm flex h-[calc(100vh-200px)] min-h-[450px] w-full">
+    <div className="bg-white rounded-[20px] overflow-hidden border border-gray-200 shadow-sm flex flex-col md:flex-row h-[calc(100vh-300px)] md:h-[calc(100vh-200px)] min-h-[400px] w-full relative">
       
-      {/* Left Sidebar */}
-      <div className="w-[320px] shrink-0 border-r border-gray-200 bg-white flex flex-col">
+      {/* Left Sidebar (Contacts or Selected Property Info) */}
+      <div className={`w-full md:w-[320px] shrink-0 md:border-r border-gray-200 bg-white flex flex-col h-full min-h-0 ${selectedChat ? 'hidden md:flex' : 'flex'}`}>
         {selectedChat ? (
           <>
             {/* View 1: Property Context (When a chat is selected) */}
@@ -322,11 +322,17 @@ function MessagesContent() {
 
       {/* Right Chat Area */}
       {selectedChat ? (
-        <div className="flex-1 flex flex-col bg-[#f5f7fa]">
+        <div className={`flex-1 flex flex-col bg-[#f5f7fa] h-full min-h-0 ${selectedChat ? 'flex' : 'hidden md:flex'}`}>
           {/* Chat Header */}
-          <div className="bg-white px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-slate-200 overflow-hidden relative shrink-0">
+          <div className="bg-white px-4 md:px-6 py-3 md:py-4 border-b border-gray-200 flex items-center justify-between">
+            <div className="flex items-center gap-2 md:gap-3">
+              <button 
+                onClick={() => setSelectedChatId(null)}
+                className="md:hidden p-1.5 -ml-1.5 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-slate-200 overflow-hidden relative shrink-0">
                 {selectedChat[selectedChat.buyerId === user.uid ? 'sellerImage' : 'buyerImage'] ? (
                   <Image src={selectedChat[selectedChat.buyerId === user.uid ? 'sellerImage' : 'buyerImage']} fill className="object-cover" alt="Avatar" />
                 ) : (

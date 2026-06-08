@@ -6,6 +6,7 @@ import { useDomain } from '@/context/DomainContext';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 interface ContactFormProps {
   property?: any;
@@ -153,7 +154,9 @@ export default function ContactForm({ property }: ContactFormProps) {
         <div className="mt-0.5">
           <input type="checkbox" id="privacy" className="w-4 h-4 text-emerald-500 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer" required />
         </div>
-        <label htmlFor="privacy" className="text-[13px] text-gray-500 font-medium leading-tight cursor-pointer select-none">Sunt de acord cu politica de confidențialitate și termenii de utilizare</label>
+        <label htmlFor="privacy" className="text-[13px] text-gray-500 font-medium leading-tight select-none">
+          Sunt de acord cu <Link href="/privacy" className="text-emerald-500 hover:text-emerald-600 hover:underline">politica de confidențialitate</Link> și <Link href="/terms" className="text-emerald-500 hover:text-emerald-600 hover:underline">termenii de utilizare</Link>
+        </label>
       </div>
 
       {existingChatId ? (

@@ -218,10 +218,10 @@ export default function AutoSearchBar() {
         animate={{ y: 0, opacity: 1 }}
         className="bg-white/10 backdrop-blur-3xl p-3 md:p-4 rounded-3xl shadow-[0_32px_64px_rgba(0,0,0,0.3)] border border-white/20 relative z-20 pointer-events-auto"
       >
-        <div className="bg-white rounded-2xl p-2 flex flex-col md:flex-row shadow-inner border border-white/50 gap-2">
+        <div className="bg-white rounded-3xl md:rounded-full flex flex-col md:flex-row shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200 divide-y md:divide-y-0 md:divide-x divide-slate-100">
           
           {/* Marca */}
-          <div className="flex-1 relative flex items-center h-14 md:h-16 px-4 bg-gray-50 rounded-xl border border-transparent hover:border-[var(--primary)]/30 focus-within:bg-white focus-within:border-[var(--primary)] focus-within:ring-4 focus-within:ring-[var(--primary)]/10 transition-all group" ref={brandDropdownRef}>
+          <div className="flex-[1.2] relative flex items-center min-h-[64px] md:min-h-[76px] px-5 md:px-6 bg-transparent hover:bg-slate-50/80 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200/50 focus-within:z-10 transition-all rounded-t-3xl md:rounded-l-full md:rounded-tr-none md:rounded-tl-full group" ref={brandDropdownRef}>
             {(() => {
               const popularBrand = POPULAR_BRANDS.find(b => b.name.toLowerCase() === marca.toLowerCase());
               const isValidBrand = AUTO_BRANDS.find(b => b.toLowerCase() === marca.toLowerCase());
@@ -238,7 +238,7 @@ export default function AutoSearchBar() {
                 return (
                   <div className="w-5 h-5 flex items-center justify-center shrink-0">
                     {imageErrors[isValidBrand.toUpperCase()] ? (
-                      <CarFront size={20} className="text-[var(--primary)] shrink-0" />
+                      <CarFront size={22} className="text-[var(--primary)] shrink-0" />
                     ) : (
                       <img 
                         src={dynamicLogo} 
@@ -251,7 +251,7 @@ export default function AutoSearchBar() {
                 );
               }
               
-              return <CarFront size={20} className="text-gray-400 group-focus-within:text-[var(--primary)] shrink-0" />;
+              return <CarFront size={22} className="text-slate-400 group-focus-within:text-[var(--primary)] shrink-0" />;
             })()}
             <input 
               type="text"
@@ -262,7 +262,7 @@ export default function AutoSearchBar() {
                 setShowBrandDropdown(true);
               }}
               onFocus={() => setShowBrandDropdown(true)}
-              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[15px] placeholder:font-medium placeholder:text-gray-400"
+              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[16px] md:text-lg placeholder:font-medium placeholder:text-gray-400"
             />
             {marca && (
               <button 
@@ -333,11 +333,9 @@ export default function AutoSearchBar() {
             )}
           </div>
 
-          <div className="hidden md:block w-px h-10 bg-gray-200 my-auto"></div>
-
           {/* Model */}
-          <div className="flex-1 relative flex items-center h-14 md:h-16 px-4 bg-gray-50 rounded-xl border border-transparent hover:border-[var(--primary)]/30 focus-within:bg-white focus-within:border-[var(--primary)] focus-within:ring-4 focus-within:ring-[var(--primary)]/10 transition-all group" ref={modelDropdownRef}>
-            <CarFront size={20} className="text-gray-400 group-focus-within:text-[var(--primary)] shrink-0" />
+          <div className="flex-[1.2] relative flex items-center min-h-[64px] md:min-h-[76px] px-5 md:px-6 bg-transparent hover:bg-slate-50/80 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200/50 focus-within:z-10 transition-all group" ref={modelDropdownRef}>
+            <CarFront size={22} className="text-slate-400 group-focus-within:text-[var(--primary)] shrink-0" />
             <input 
               type="text"
               placeholder={marca ? "Toate modelele" : "Alege marca întâi"}
@@ -349,7 +347,7 @@ export default function AutoSearchBar() {
               onFocus={() => {
                 if (marca) setShowModelDropdown(true);
               }}
-              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[15px] placeholder:font-medium placeholder:text-gray-400"
+              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[16px] md:text-lg placeholder:font-medium placeholder:text-gray-400"
             />
             {model && (
               <button 
@@ -411,15 +409,13 @@ export default function AutoSearchBar() {
             )}
           </div>
 
-          <div className="hidden md:block w-px h-10 bg-gray-200 my-auto"></div>
-
           {/* An Minim */}
-          <div className="flex-[0.7] relative flex items-center h-14 md:h-16 px-4 bg-gray-50 rounded-xl border border-transparent hover:border-[var(--primary)]/30 focus-within:bg-white focus-within:border-[var(--primary)] focus-within:ring-4 focus-within:ring-[var(--primary)]/10 transition-all group">
-            <Calendar size={20} className="text-gray-400 group-focus-within:text-[var(--primary)] shrink-0" />
+          <div className="flex-[0.8] relative flex items-center min-h-[64px] md:min-h-[76px] px-5 md:px-6 bg-transparent hover:bg-slate-50/80 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200/50 focus-within:z-10 transition-all group">
+            <Calendar size={22} className="text-slate-400 group-focus-within:text-[var(--primary)] shrink-0" />
             <select 
               value={yearMin}
               onChange={(e) => setYearMin(e.target.value)}
-              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[15px] appearance-none"
+              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[16px] md:text-lg appearance-none"
             >
               <option value="">An min.</option>
               {Array.from({length: 30}, (_, i) => new Date().getFullYear() - i).map(y => (
@@ -428,11 +424,9 @@ export default function AutoSearchBar() {
             </select>
           </div>
 
-          <div className="hidden md:block w-px h-10 bg-gray-200 my-auto"></div>
-
           {/* Locatie */}
-          <div className="flex-[0.7] relative flex items-center h-14 md:h-16 px-4 bg-gray-50 rounded-xl border border-transparent hover:border-[var(--primary)]/30 focus-within:bg-white focus-within:border-[var(--primary)] focus-within:ring-4 focus-within:ring-[var(--primary)]/10 transition-all group" ref={locationDropdownRef}>
-            <MapPin size={20} className="text-gray-400 group-focus-within:text-[var(--primary)] shrink-0" />
+          <div className="flex-1 relative flex items-center min-h-[64px] md:min-h-[76px] px-5 md:px-6 bg-transparent hover:bg-slate-50/80 focus-within:bg-white focus-within:ring-2 focus-within:ring-sky-200/50 focus-within:z-10 transition-all group" ref={locationDropdownRef}>
+            <MapPin size={22} className="text-slate-400 group-focus-within:text-[var(--primary)] shrink-0" />
             <input 
               type="text"
               placeholder="Oraș (ex: București)"
@@ -442,7 +436,7 @@ export default function AutoSearchBar() {
                 setShowLocationDropdown(true);
               }}
               onFocus={() => setShowLocationDropdown(true)}
-              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[15px] placeholder:font-medium placeholder:text-gray-400"
+              className="w-full h-full bg-transparent border-none outline-none text-gray-800 font-bold px-3 text-[16px] md:text-lg placeholder:font-medium placeholder:text-gray-400"
             />
             {location && (
               <button 
@@ -486,13 +480,15 @@ export default function AutoSearchBar() {
           </div>
 
           {/* Search Button */}
-          <button 
-            onClick={handleSearch}
-            className="h-14 md:h-16 bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white px-8 font-black text-[16px] transition-colors flex items-center justify-center gap-2 rounded-xl shadow-lg shadow-[var(--primary)]/30"
-          >
-            <Search size={20} strokeWidth={3} />
-            <span className="hidden md:inline">Caută Auto</span>
-          </button>
+          <div className="p-2 md:p-2 bg-transparent flex items-center shrink-0">
+            <button 
+              onClick={handleSearch}
+              className="w-full md:w-auto min-h-[60px] md:min-h-[64px] bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white px-8 font-black text-[18px] md:text-xl transition-all flex items-center justify-center gap-2.5 rounded-2xl md:rounded-full shadow-md hover:shadow-xl focus:ring-4 focus:ring-sky-500/30"
+            >
+              <Search size={22} strokeWidth={3} />
+              <span className="md:hidden">Caută Auto</span>
+            </button>
+          </div>
         </div>
       </motion.div>
     </div>
